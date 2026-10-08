@@ -1,0 +1,3 @@
+class ExtraAccountSummary < ApplicationRecord
+    
+end

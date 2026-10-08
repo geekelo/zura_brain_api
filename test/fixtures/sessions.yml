@@ -1,0 +1,33 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  client: one
+  session_date: 2026-10-07 19:33:37
+  amount: 9.99
+  settled: false
+  bonus: 9.99
+  cycle: 1
+  cycle_session: 1
+  lunez: false
+  lunez_amount: 9.99
+  hands: 1
+  comments: MyText
+  status: MyString
+  car_washed: false
+  proof_of_payment: MyString
+
+two:
+  client: two
+  session_date: 2026-10-07 19:33:37
+  amount: 9.99
+  settled: false
+  bonus: 9.99
+  cycle: 1
+  cycle_session: 1
+  lunez: false
+  lunez_amount: 9.99
+  hands: 1
+  comments: MyText
+  status: MyString
+  car_washed: false
+  proof_of_payment: MyString

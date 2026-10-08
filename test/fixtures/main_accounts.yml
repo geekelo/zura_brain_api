@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  month: 1
+  year: 1
+  total_session_inflow: 9.99
+  total_lunez_inflow: 9.99
+  total_main_account_outflow: 9.99
+  balance: 9.99
+
+two:
+  month: 1
+  year: 1
+  total_session_inflow: 9.99
+  total_lunez_inflow: 9.99
+  total_main_account_outflow: 9.99
+  balance: 9.99

@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  work_name: MyString
+  active: false
+  avatar: MyString
+  url: MyString
+
+two:
+  work_name: MyString
+  active: false
+  avatar: MyString
+  url: MyString

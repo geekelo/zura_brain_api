@@ -1,0 +1,3 @@
+class LunezAccount < ApplicationRecord
+    
+end

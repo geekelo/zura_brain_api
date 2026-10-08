@@ -1,0 +1,2 @@
+class TechAccountSummary < ApplicationRecord
+end
