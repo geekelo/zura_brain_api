@@ -8,9 +8,30 @@ class Session < ApplicationRecord
   has_many :session_therapists,
            dependent: :destroy
 
+  has_many :session_activities,
+           dependent: :destroy
+
+  has_many :payment_methods,
+           dependent: :destroy
+
   has_many :therapists,
            through: :session_therapists
 
   accepts_nested_attributes_for :session_therapists,
                                 allow_destroy: true
+
+  scope :by_cycle, -> { order(:cycle, :cycle_length) }
+
+  before_create :generate_session_code
+  before_create :initialize_comments
+
+  private
+
+  def generate_session_code
+    self.session_code = SecureRandom.uuid if session_code.blank?
+  end
+
+  def initialize_comments
+    self.comments = [] if comments.blank?
+  end
 end

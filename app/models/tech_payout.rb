@@ -1,2 +1,0 @@
-class TechPayout < ApplicationRecord
-end

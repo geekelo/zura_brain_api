@@ -2,16 +2,14 @@
 
 one:
   month: 1
-  year: 1
-  total_tech_account_inflow: 9.99
-  total_tech_payin_inflow: 9.99
-  total_tech_payout_outflow: 9.99
+  year: 2026
+  total_tech_payin: 9.99
+  total_tech_payout: 9.99
   balance: 9.99
 
 two:
-  month: 1
-  year: 1
-  total_tech_account_inflow: 9.99
-  total_tech_payin_inflow: 9.99
-  total_tech_payout_outflow: 9.99
+  month: 2
+  year: 2026
+  total_tech_payin: 9.99
+  total_tech_payout: 9.99
   balance: 9.99

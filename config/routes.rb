@@ -1,10 +1,38 @@
 Rails.application.routes.draw do
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # Defines the root path route ("/")
-  # root "posts#index"
+  namespace :pos do
+    resources :clients, only: [:index, :show, :create, :update]
+
+    get "sessions", to: "sessions#index"
+    post "sessions", to: "sessions#create"
+    match "sessions/:ss/comments", to: "sessions#add_comment", via: [:patch, :put]
+    match "sessions/:ss", to: "sessions#update", via: [:patch, :put]
+    delete "sessions/:id", to: "sessions#destroy"
+
+    post "session_therapists", to: "session_therapists#create"
+    delete "session_therapists", to: "session_therapists#destroy"
+    post "session_therapists/tip", to: "session_therapists#tip"
+
+    resources :session_activities, only: [:create, :update, :destroy], param: :session_activity_id
+
+    resources :admin_notes, only: [:index, :create]
+    match "admin_notes/:admin_note_id", to: "admin_notes#update", via: [:patch, :put]
+    delete "admin_notes/:an", to: "admin_notes#destroy"
+
+    resources :payment_methods, only: [:create, :update, :destroy]
+    resources :main_account_expenses, only: [:create, :update, :destroy]
+
+    resources :therapist_accounts, only: [:create]
+    resources :therapist_payins_payouts, only: [:create, :update, :destroy]
+
+    resources :tech_account_summaries, only: [:create]
+    resources :tech_payins_payouts, only: [:create, :update, :destroy], param: :tech_account_id
+
+    resources :extra_account_summaries, only: [:create]
+    resources :extra_account_payins_payouts, only: [:create, :update, :destroy], param: :extra_account_payin_payout_id
+
+    resources :lunez_account_summaries, only: [:create]
+    resources :main_account_summaries, only: [:create]
+  end
 end

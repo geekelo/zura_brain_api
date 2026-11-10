@@ -1,2 +1,0 @@
-class MainExpense < ApplicationRecord
-end

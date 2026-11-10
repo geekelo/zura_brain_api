@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  session: one
+  therapist: one
+  action: created
+  performed_at: 2026-11-08 09:27:00
+
+two:
+  session: two
+  therapist: two
+  action: updated
+  performed_at: 2026-11-08 09:27:00

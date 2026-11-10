@@ -1,2 +1,0 @@
-class ExtraExpense < ApplicationRecord
-end

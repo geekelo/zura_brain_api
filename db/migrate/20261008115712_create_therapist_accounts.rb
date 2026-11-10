@@ -5,8 +5,8 @@ class CreateTherapistAccounts < ActiveRecord::Migration[7.2]
       t.integer :month
       t.integer :year
       t.decimal :total_therapist_payin
-      t.decimal :total_tip_inflow
       t.decimal :total_therapist_payout
+      t.decimal :total_tip_balance
       t.decimal :balance
 
       t.timestamps

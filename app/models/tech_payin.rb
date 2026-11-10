@@ -1,2 +1,0 @@
-class TechPayin < ApplicationRecord
-end

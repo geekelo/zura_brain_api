@@ -1,6 +1,6 @@
 require "test_helper"
 
-class MainExpenseTest < ActiveSupport::TestCase
+class SessionActivityTest < ActiveSupport::TestCase
   # test "the truth" do
   #   assert true
   # end
