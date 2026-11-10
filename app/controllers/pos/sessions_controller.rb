@@ -29,10 +29,7 @@ class Pos::SessionsController < ApplicationController
     end
 
     client = find_client_by_phone(params[:client_phone])
-    if client.nil?
-      render json: { error: "Client not found" }, status: :not_found
-      return
-    end
+    return if client.nil?
 
     # generate session code
     session_code = SecureRandom.hex(4).downcase
@@ -104,14 +101,14 @@ class Pos::SessionsController < ApplicationController
       return
     end
 
-    therapist = set_therapist(params[:th])
-    if therapist != session.session_creator && params[:tc] != ADMIN_CODE
-      render json: { error: "You are not authorized to update this session" }, status: :forbidden
-      return
-    end
+    return unless editor_authorized?(session)
 
     session.transaction_id = params[:transaction_id]
-    session.save
+    if session.save
+      render json: session, status: :ok
+    else
+      render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
+    end
   end
 
   def add_comment
@@ -130,20 +127,44 @@ class Pos::SessionsController < ApplicationController
   end
 
   def update_status
-    therapist = set_therapist(params[:th])
-    if therapist != session.session_creator && params[:tc] != ADMIN_CODE
-      render json: { error: "You are not authorized to update this session" }, status: :forbidden
+    session = Session.find_by(session_code: params[:ss])
+    if session.nil?
+      render json: { error: "Session not found" }, status: :not_found
       return
     end
 
+    return unless editor_authorized?(session)
+
+    session.status = params[:status]
+    if session.save
+      render json: session, status: :ok
+    else
+      render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  def start_end_session
     session = Session.find_by(session_code: params[:ss])
     if session.nil?
       render json: { error: "Session not found" }, status: :not_found
       return
     end
     
-    session.status = params[:status]
-    session.save
+    session.start_time = params[:start_time] if params.key?(:start_time)
+    session.end_time = params[:end_time] if params.key?(:end_time)
+
+    if session.start_time.present? && session.end_time.present?
+      session.duration = (session.end_time - session.start_time).to_i
+      session.status = "ended"
+    elsif session.start_time.present?
+      session.status = "started"
+    end
+
+    if session.save
+      render json: session, status: :ok
+    else
+      render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
+    end
   end
 
   private
@@ -196,6 +217,30 @@ class Pos::SessionsController < ApplicationController
     client
   end
 
-  def set_th
+  def editor_authorized?(session_record)
+    return true if params[:tc] == ADMIN_CODE
+
+    therapist = Therapist.find_by(code: params[:th])
+    if therapist.nil?
+      render json: { error: "Therapist not found" }, status: :not_found
+      return false
+    end
+
+    if therapist != session_record.session_creator
+      render json: { error: "You are not authorized to update this session" }, status: :forbidden
+      return false
+    end
+
+    true
+  end
+
+  def set_therapist(code)
+    therapist = Therapist.find_by(code: code)
+    if therapist.nil?
+      render json: { error: "Therapist not found" }, status: :not_found
+      return
+    end
+    therapist
+  end
 
 end

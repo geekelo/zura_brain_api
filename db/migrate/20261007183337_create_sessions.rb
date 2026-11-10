@@ -12,7 +12,6 @@ class CreateSessions < ActiveRecord::Migration[7.2]
       t.string :hands, null: true
       t.jsonb :comments, null: false, default: []
       t.string :status, default: 'pending'
-      t.boolean :car_washed, default: false
       t.references :session_creator, null: true, foreign_key: { to_table: :therapists}
       t.string :transaction_id, null: true
       t.string :session_code, unique: true, index: true

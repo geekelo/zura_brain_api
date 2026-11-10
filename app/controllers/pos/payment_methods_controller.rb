@@ -1,6 +1,9 @@
 class Pos::PaymentMethodsController < ApplicationController
   def create
-    payment_method = PaymentMethod.new(payment_method_params)
+    session = set_session
+    return if session.nil?
+
+    payment_method = PaymentMethod.new(payment_method_params.merge(session_id: session.id))
     if payment_method.save
       render json: payment_method, status: :created
     else
@@ -30,7 +33,16 @@ class Pos::PaymentMethodsController < ApplicationController
   private
 
   def payment_method_params
-    params.require(:payment_method).permit(:session_id, :type, :amount, :status)
+    params.require(:payment_method).permit(:source, :type, :amount, :status)
+  end
+
+  def set_session
+    session = Session.find_by(session_code: params[:session_code])
+    if session.nil?
+      render json: { error: "Session not found" }, status: :not_found
+      return
+    end
+    session
   end
 
   def set_payment_method
