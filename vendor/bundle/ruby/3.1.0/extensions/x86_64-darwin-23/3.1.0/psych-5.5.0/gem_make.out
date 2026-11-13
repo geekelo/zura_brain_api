@@ -1,0 +1,23 @@
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/psych-5.5.0/ext/psych
+/Users/apple/.rbenv/versions/3.1.4/bin/ruby -I /Users/apple/.rbenv/versions/3.1.4/lib/ruby/3.1.0 extconf.rb
+creating Makefile
+
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/psych-5.5.0/ext/psych
+make DESTDIR\= sitearchdir\=./.gem.20261111-43126-2euaah sitelibdir\=./.gem.20261111-43126-2euaah clean
+cd libyaml && /Library/Developer/CommandLineTools/usr/bin/make clean
+/bin/sh: line 0: cd: libyaml: No such file or directory
+make: [clean-so] Error 1 (ignored)
+
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/psych-5.5.0/ext/psych
+make DESTDIR\= sitearchdir\=./.gem.20261111-43126-2euaah sitelibdir\=./.gem.20261111-43126-2euaah
+compiling psych.c
+compiling psych_emitter.c
+compiling psych_parser.c
+compiling psych_to_ruby.c
+compiling psych_yaml_tree.c
+linking shared-object psych.bundle
+ld: warning: ignoring duplicate libraries: '-lruby.3.1'
+
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/psych-5.5.0/ext/psych
+make DESTDIR\= sitearchdir\=./.gem.20261111-43126-2euaah sitelibdir\=./.gem.20261111-43126-2euaah install
+/usr/bin/install -c -m 0755 psych.bundle ./.gem.20261111-43126-2euaah

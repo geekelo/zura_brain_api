@@ -1,0 +1,17 @@
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/debug-1.11.1/ext/debug
+/Users/apple/.rbenv/versions/3.1.4/bin/ruby -I /Users/apple/.rbenv/versions/3.1.4/lib/ruby/3.1.0 extconf.rb
+creating Makefile
+
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/debug-1.11.1/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20261111-43126-kixeid sitelibdir\=./.gem.20261111-43126-kixeid clean
+
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/debug-1.11.1/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20261111-43126-kixeid sitelibdir\=./.gem.20261111-43126-kixeid
+compiling debug.c
+compiling iseq_collector.c
+linking shared-object debug/debug.bundle
+ld: warning: ignoring duplicate libraries: '-lruby.3.1'
+
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/debug-1.11.1/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20261111-43126-kixeid sitelibdir\=./.gem.20261111-43126-kixeid install
+/usr/bin/install -c -m 0755 debug.bundle ./.gem.20261111-43126-kixeid/debug

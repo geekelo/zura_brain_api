@@ -1,0 +1,16 @@
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/cgi-0.5.2/ext/cgi/escape
+/Users/apple/.rbenv/versions/3.1.4/bin/ruby -I /Users/apple/.rbenv/versions/3.1.4/lib/ruby/3.1.0 extconf.rb
+creating Makefile
+
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/cgi-0.5.2/ext/cgi/escape
+make DESTDIR\= sitearchdir\=./.gem.20261111-43126-83sioi sitelibdir\=./.gem.20261111-43126-83sioi clean
+
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/cgi-0.5.2/ext/cgi/escape
+make DESTDIR\= sitearchdir\=./.gem.20261111-43126-83sioi sitelibdir\=./.gem.20261111-43126-83sioi
+compiling escape.c
+linking shared-object cgi/escape.bundle
+ld: warning: ignoring duplicate libraries: '-lruby.3.1'
+
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/cgi-0.5.2/ext/cgi/escape
+make DESTDIR\= sitearchdir\=./.gem.20261111-43126-83sioi sitelibdir\=./.gem.20261111-43126-83sioi install
+/usr/bin/install -c -m 0755 escape.bundle ./.gem.20261111-43126-83sioi/cgi

@@ -47,7 +47,7 @@ class Pos::SessionTherapistsController < ApplicationController
       render json: { error: "Admin code is required" }, status: :bad_request
       return
     end
-    if admin_code != ADMIN_CODE
+    if !AdminCode.matches?(admin_code)
       render json: { error: "Not authorized to tip" }, status: :unauthorized
       return
     end

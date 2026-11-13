@@ -2,7 +2,7 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   namespace :pos do
-    resources :clients, only: [:index, :show, :create, :update]
+    resources :clients, only: [:index, :show, :create, :update, :destroy]
 
     get "sessions", to: "sessions#index"
     post "sessions", to: "sessions#create"

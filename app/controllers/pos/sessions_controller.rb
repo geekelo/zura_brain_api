@@ -81,7 +81,7 @@ class Pos::SessionsController < ApplicationController
       return
     end
 
-    if params[:code] != ADMIN_CODE
+    if !AdminCode.matches?(params[:code])
       render json: { error: "Invalid code" }, status: :unauthorized
       return
     end
@@ -218,7 +218,7 @@ class Pos::SessionsController < ApplicationController
   end
 
   def editor_authorized?(session_record)
-    return true if params[:tc] == ADMIN_CODE
+    return true if AdminCode.matches?(params[:tc])
 
     therapist = Therapist.find_by(code: params[:th])
     if therapist.nil?

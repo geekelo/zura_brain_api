@@ -36,7 +36,7 @@ class Pos::ClientsController < ApplicationController
     client = find_client_by_phone
 
     code = params[:code]
-    if code == ADMIN_CODE
+    if AdminCode.matches?(code)
       client.destroy
       render json: { message: "Client deleted successfully" }, status: :ok
     else

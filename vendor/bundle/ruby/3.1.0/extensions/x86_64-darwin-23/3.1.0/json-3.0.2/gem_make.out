@@ -1,0 +1,29 @@
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/json-3.0.2/ext/json/ext/parser
+/Users/apple/.rbenv/versions/3.1.4/bin/ruby -I /Users/apple/.rbenv/versions/3.1.4/lib/ruby/3.1.0 extconf.rb
+checking for rb_enc_interned_str() in ruby/encoding.h... yes
+checking for rb_str_to_interned_str() in ruby.h... yes
+checking for rb_hash_new_capa() in ruby.h... no
+checking for rb_hash_bulk_insert() in ruby.h... yes
+checking for ruby_xfree_sized() in ruby.h... no
+checking for x86intrin.h... yes
+checking for _lzcnt_u64() in x86intrin.h... yes
+checking for intrin.h... no
+checking for RUBY_TYPED_EMBEDDABLE in ruby.h... no
+checking for whether -std=c99 is accepted as CFLAGS... yes
+checking for whether -mno-outline is accepted as CFLAGS... yes
+checking for x86intrin.h... yes
+checking for cpuid.h... yes
+creating Makefile
+
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/json-3.0.2/ext/json/ext/parser
+make DESTDIR\= sitearchdir\=./.gem.20261111-43126-s1q9ur sitelibdir\=./.gem.20261111-43126-s1q9ur clean
+
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/json-3.0.2/ext/json/ext/parser
+make DESTDIR\= sitearchdir\=./.gem.20261111-43126-s1q9ur sitelibdir\=./.gem.20261111-43126-s1q9ur
+compiling parser.c
+linking shared-object json/ext/parser.bundle
+ld: warning: ignoring duplicate libraries: '-lruby.3.1'
+
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/json-3.0.2/ext/json/ext/parser
+make DESTDIR\= sitearchdir\=./.gem.20261111-43126-s1q9ur sitelibdir\=./.gem.20261111-43126-s1q9ur install
+/usr/bin/install -c -m 0755 parser.bundle ./.gem.20261111-43126-s1q9ur/json/ext

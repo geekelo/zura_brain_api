@@ -1,1 +1,0 @@
-ADMIN_CODE = ENV.fetch("ADMIN_CODE", "123456")

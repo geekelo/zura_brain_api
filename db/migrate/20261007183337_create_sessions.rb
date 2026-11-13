@@ -14,7 +14,7 @@ class CreateSessions < ActiveRecord::Migration[7.2]
       t.string :status, default: 'pending'
       t.references :session_creator, null: true, foreign_key: { to_table: :therapists}
       t.string :transaction_id, null: true
-      t.string :session_code, unique: true, index: true
+      t.string :session_code, index: { unique: true }
       t.string :session_type
       t.time :start_time, null: true
       t.time :end_time, null: true

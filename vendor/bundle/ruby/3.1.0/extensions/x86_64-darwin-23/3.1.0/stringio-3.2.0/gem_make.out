@@ -1,0 +1,17 @@
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/stringio-3.2.0/ext/stringio
+/Users/apple/.rbenv/versions/3.1.4/bin/ruby -I /Users/apple/.rbenv/versions/3.1.4/lib/ruby/3.1.0 extconf.rb
+checking for rb_io_mode_t in ruby/io.h... no
+creating Makefile
+
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/stringio-3.2.0/ext/stringio
+make DESTDIR\= sitearchdir\=./.gem.20261111-43126-e7mm0h sitelibdir\=./.gem.20261111-43126-e7mm0h clean
+
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/stringio-3.2.0/ext/stringio
+make DESTDIR\= sitearchdir\=./.gem.20261111-43126-e7mm0h sitelibdir\=./.gem.20261111-43126-e7mm0h
+compiling stringio.c
+linking shared-object stringio.bundle
+ld: warning: ignoring duplicate libraries: '-lruby.3.1'
+
+current directory: /Users/apple/Projects/geekelo/zura_brain_api/vendor/bundle/ruby/3.1.0/gems/stringio-3.2.0/ext/stringio
+make DESTDIR\= sitearchdir\=./.gem.20261111-43126-e7mm0h sitelibdir\=./.gem.20261111-43126-e7mm0h install
+/usr/bin/install -c -m 0755 stringio.bundle ./.gem.20261111-43126-e7mm0h

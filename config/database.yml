@@ -82,8 +82,13 @@ test:
 # Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
 # for a full overview on how database connection configuration can be specified.
 #
+# production:
+#   <<: *default
+#   database: zura_brain_api_production
+#   username: zura_brain_api
+#   password: <%= ENV["ZURA_BRAIN_API_DATABASE_PASSWORD"] %>
 production:
-  <<: *default
-  database: zura_brain_api_production
-  username: zura_brain_api
-  password: <%= ENV["ZURA_BRAIN_API_DATABASE_PASSWORD"] %>
+  adapter: postgresql
+  encoding: unicode
+  url: <%= ENV.fetch("DATABASE_URL") %>
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
