@@ -15,7 +15,7 @@ class CreateSessions < ActiveRecord::Migration[7.2]
       t.references :session_creator, null: true, foreign_key: { to_table: :therapists}
       t.string :transaction_id, null: true
       t.string :session_code, index: { unique: true }
-      t.string :session_type
+      t.string :session_type, default: 'solo, couple, group'
       t.time :start_time, null: true
       t.time :end_time, null: true
       t.integer :duration, default: 0

@@ -170,7 +170,7 @@ class Pos::SessionsController < ApplicationController
   private
 
   def session_params
-    params.require(:session).permit(:session_type, :lunez, :amount, :hands)
+    params.require(:session).permit(:session_type, :massage_type, :lunez, :amount, :hands)
   end
 
   def session_update_params
@@ -185,6 +185,7 @@ class Pos::SessionsController < ApplicationController
       :car_washed,
       :proof_of_payment,
       :session_type,
+      :massage_type,
       :start_time,
       :end_time
     )
