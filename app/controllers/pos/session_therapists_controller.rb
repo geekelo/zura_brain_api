@@ -59,8 +59,7 @@ class Pos::SessionTherapistsController < ApplicationController
     end
 
 
-    session_therapist = SessionTherapist.find_by(params[:stid])
-    therapist_tipped = session_therapist.therapist
+    session_therapist = SessionTherapist.find_by(id: params[:stid])
     if session_therapist.nil?
       render json: { error: "Session therapist not found" }, status: :not_found
       return
@@ -72,7 +71,7 @@ class Pos::SessionTherapistsController < ApplicationController
       return
     end
 
-    result = Pos::ApplyTip.call(session_therapist: therapist_tipped, tip_amount: tip_amount)
+    result = Pos::ApplyTip.call(session_therapist: session_therapist, tip_amount: tip_amount)
     render json: {
       tip_amount: result[:session_therapist].tip_amount,
       tip_balance: result[:session_therapist].tip_balance,
@@ -84,20 +83,13 @@ class Pos::SessionTherapistsController < ApplicationController
   private
 
   def set_therapist
-    code = params[:code]
-    therapist = Pos::TherapistLookup.name_for_code(code)
-    if therapist.nil?
-      render json: { error: "Therapist not found" }, status: :not_found
-      return
-    end
-    therapist
+    Therapist.find_by(code: params[:code])
   end
-  
+
   def decimal_tip_amount
-      BigDecimal(params[:tip_amount].to_s)
-    rescue ArgumentError
-      nil
-    end
+    BigDecimal(params[:tip_amount].to_s)
+  rescue ArgumentError
+    nil
   end
   
   def session_therapist_params
