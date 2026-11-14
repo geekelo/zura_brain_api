@@ -101,7 +101,7 @@ class Pos::SessionsController < ApplicationController
       return
     end
 
-    return unless editor_authorized?(session)
+    return unless authorized?(session)
 
     session.transaction_id = params[:transaction_id]
     if session.save
@@ -133,7 +133,7 @@ class Pos::SessionsController < ApplicationController
       return
     end
 
-    return unless editor_authorized?(session)
+    return unless authorized?(session)
 
     session.status = params[:status]
     if session.save
@@ -216,23 +216,6 @@ class Pos::SessionsController < ApplicationController
       return
     end
     client
-  end
-
-  def editor_authorized?(session_record)
-    return true if AdminCode.matches?(params[:tc])
-
-    therapist = Therapist.find_by(code: params[:th])
-    if therapist.nil?
-      render json: { error: "Therapist not found" }, status: :not_found
-      return false
-    end
-
-    if therapist != session_record.session_creator
-      render json: { error: "You are not authorized to update this session" }, status: :forbidden
-      return false
-    end
-
-    true
   end
 
   def set_therapist(code)

@@ -1,12 +1,12 @@
 class Pos::SessionTherapistsController < ApplicationController
   def create
     session_therapist = SessionTherapist.new(session_therapist_params)
-
-    therapist = set_therapist
-    if therapist.nil?
-      render json: { error: "Therapist not found" }, status: :not_found
+    session = Session.find_by(id: session_therapist.session_id)
+    if session.nil?
+      render json: { error: "Session not found" }, status: :not_found
       return
     end
+    return unless authorized?(session)
 
     if session_therapist.save
       render json: session_therapist, status: :created
@@ -21,12 +21,11 @@ class Pos::SessionTherapistsController < ApplicationController
       render json: { error: "Session not found" }, status: :not_found
       return
     end
+    return unless authorized?(session)
 
-    therapist = set_therapist
-    if therapist.nil?
-      render json: { error: "Therapist not found" }, status: :not_found
-      return
-    end
+    therapist = set_therapist(params[:code])
+    return if therapist.nil?
+
 
     session_therapist = SessionTherapist.find_by(session_id: session.id, therapist_id: therapist.id)
     if session_therapist.nil?
@@ -83,7 +82,12 @@ class Pos::SessionTherapistsController < ApplicationController
   private
 
   def set_therapist
-    Therapist.find_by(code: params[:code])
+    therapist = Therapist.find_by(code: params[:code])
+    if therapist.nil?
+      render json: { error: "Therapist not found" }, status: :not_found
+      return
+    end
+    therapist
   end
 
   def decimal_tip_amount
