@@ -17,8 +17,7 @@ class Pos::SessionsController < ApplicationController
       end
       sessions = sessions.where(client: client)
     end
-
-    render json: sessions.as_json(include: { client: { only: [:name, :phone] } }), status: :ok
+    render json: sessions.as_json(include: { client: { only: [:name, :phone] }, session_creator: { only: [:work_name] } }), status: :ok
   end
 
   def create
