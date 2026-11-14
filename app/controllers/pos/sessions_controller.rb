@@ -6,7 +6,7 @@ class Pos::SessionsController < ApplicationController
 """
 
   def index
-    sessions = Session.by_cycle
+    sessions = Session.by_cycle.includes(:client)
     if params[:client_id].present?
       sessions = sessions.where(client_id: params[:client_id])
     elsif params[:phone].present?
@@ -18,7 +18,7 @@ class Pos::SessionsController < ApplicationController
       sessions = sessions.where(client: client)
     end
 
-    render json: sessions, status: :ok
+    render json: sessions.as_json(include: { client: { only: [:name, :phone] } }), status: :ok
   end
 
   def create
