@@ -12,6 +12,7 @@ Rails.application.routes.draw do
     match "sessions/:ss/comments", to: "sessions#add_comment", via: [:patch, :put]
     match "sessions/:ss/transaction_id", to: "sessions#update_transaction_id", via: [:patch, :put]
     match "sessions/:ss/status", to: "sessions#update_status", via: [:patch, :put]
+    match "sessions/:ss/verify_payment", to: "sessions#verify_payment", via: [:patch, :put]
     match "sessions/:ss/times", to: "sessions#start_end_session", via: [:patch, :put]
     match "sessions/:ss", to: "sessions#update", via: [:patch, :put]
     delete "sessions/:id", to: "sessions#destroy"

@@ -117,7 +117,9 @@ class Pos::SessionsController < ApplicationController
       return
     end
 
-    session.session_history["payment_verified"] = params[:payment_verified]
+    return unless authorized?(session)
+
+    session.session_history = session.session_history.to_h.merge("payment_verified" => true)
     if session.save
       render json: session, status: :ok
     else
