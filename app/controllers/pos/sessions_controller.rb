@@ -110,6 +110,21 @@ class Pos::SessionsController < ApplicationController
     end
   end
 
+  def verify_payment
+    session = Session.find_by(session_code: params[:ss])
+    if session.nil?
+      render json: { error: "Session not found" }, status: :not_found
+      return
+    end
+
+    session.session_history["payment_verified"] = params[:payment_verified]
+    if session.save
+      render json: session, status: :ok
+    else
+      render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   def add_comment
     session = Session.find_by(session_code: params[:ss])
     if session.nil?
@@ -136,6 +151,15 @@ class Pos::SessionsController < ApplicationController
 
     session.status = params[:status]
     if session.save
+      if session.start_time.present?
+        session.session_history["started"] = true
+      end
+      if session.end_time.present?
+        session.session_history["ended"] = true
+      end
+      if session.status == "completed"
+        session.session_history["completed"] = true
+      end
       render json: session, status: :ok
     else
       render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
@@ -160,6 +184,12 @@ class Pos::SessionsController < ApplicationController
     end
 
     if session.save
+      if session.start_time.present?
+        session.session_history["started"] = true
+      end
+      if session.end_time.present?
+        session.session_history["ended"] = true
+      end
       render json: session, status: :ok
     else
       render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
