@@ -27,9 +27,14 @@ class Pos::SessionTherapistsController < ApplicationController
     return if therapist.nil?
 
 
-    session_therapist = SessionTherapist.find_by(session_id: session.id, therapist_id: therapist.id)
+    session_therapist = SessionTherapist.find_by(session_id: session.id, therapist_id: therapist.id) 
     if session_therapist.nil?
       render json: { error: "Session therapist not found" }, status: :not_found
+      return
+    end
+    
+    if session_therapist.tip_amount > 0
+      render json: { error: "Session therapist has tip amount" }, status: :unprocessable_entity
       return
     end
 
