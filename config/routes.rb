@@ -4,6 +4,9 @@ Rails.application.routes.draw do
   namespace :pos do
     resources :clients, only: [:index, :show, :create, :update, :destroy]
 
+    resources :therapists, only: [:index, :show, :create], param: :code
+    match "therapists/:code/status", to: "therapists#update_status", via: [:patch, :put]
+
     get "sessions", to: "sessions#index"
     post "sessions", to: "sessions#create"
     match "sessions/:ss/comments", to: "sessions#add_comment", via: [:patch, :put]
