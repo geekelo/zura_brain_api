@@ -1,18 +1,20 @@
 class Pos::SessionTherapistsController < ApplicationController
   def create
-    session_therapist = SessionTherapist.new(session_therapist_params)
-    session = Session.find_by(id: session_therapist.session_id)
+    therapist_id = Therapist.find_by(work_name: params[:name]).id
+    if therapist_id.nil?
+      render json: { error: "Therapist not found" }, status: :not_found
+      return
+    end
+    session = Session.find_by(session_code: params[:ss])
     if session.nil?
       render json: { error: "Session not found" }, status: :not_found
       return
     end
     return unless authorized?(session)
 
-    if session_therapist.save
-      render json: session_therapist, status: :created
-    else
-      render json: { errors: session_therapist.errors.full_messages }, status: :unprocessable_entity
-    end
+    session_therapist = SessionTherapist.new(session_therapist_params).merge(therapist_id: therapist_id, session_id: session.id)
+    session_therapist.save
+    render json: session_therapist, status: :created
   end
 
   def destroy
