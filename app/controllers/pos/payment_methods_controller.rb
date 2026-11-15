@@ -4,11 +4,14 @@ class Pos::PaymentMethodsController < ApplicationController
     return if session.nil?
 
     payment_method = PaymentMethod.new(payment_method_params.merge(session_id: session.id))
+    attach_receipt(payment_method) if params[:receipt].present?
     if payment_method.save
       render json: payment_method, status: :created
     else
       render json: { errors: payment_method.errors.full_messages }, status: :unprocessable_entity
     end
+  rescue Pos::ImgbbUpload::Error, KeyError => error
+    render json: { error: error.message }, status: :bad_gateway
   end
 
   def update
@@ -32,23 +35,7 @@ class Pos::PaymentMethodsController < ApplicationController
       return
     end
 
-    uploaded = Pos::ImgbbUpload.call(file, name: receipt_name(payment_method))
-    uploaded_at = Time.current
-    receipts = payment_method.payment_url.to_a
-    receipt = {
-      "view_url" => uploaded[:view_url],
-      "delete_url" => uploaded[:delete_url],
-      "uploaded_at" => uploaded_at.iso8601,
-      "time" => uploaded[:time].to_s
-    }
-    index = params[:index].presence&.to_i
-    if index && receipts[index]
-      receipts[index] = receipt
-    else
-      receipts << receipt
-    end
-    payment_method.payment_url = receipts
-    payment_method.receipt_uploaded_at = uploaded_at
+    attach_receipt(payment_method)
 
     if payment_method.save
       render json: payment_method, status: :ok
@@ -80,6 +67,18 @@ class Pos::PaymentMethodsController < ApplicationController
       return
     end
     session
+  end
+
+  def attach_receipt(payment_method)
+    uploaded = Pos::ImgbbUpload.call(params[:receipt], name: receipt_name(payment_method))
+    payment_method.payment_url = [
+      {
+        "img_url" => uploaded[:img_url],
+        "del_url" => uploaded[:del_url],
+        "date_time" => uploaded[:date_time]
+      }
+    ]
+    payment_method.receipt_uploaded_at = Time.current
   end
 
   def receipt_name(payment_method)

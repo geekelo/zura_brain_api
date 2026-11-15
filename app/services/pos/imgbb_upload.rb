@@ -27,12 +27,17 @@ module Pos
         }
       end
 
-      raise Error, "Upload failed" unless response.success? && response.body["success"]
+      body = response.body
+      body = JSON.parse(body) if body.is_a?(String)
+      body = body.deep_stringify_keys if body.respond_to?(:deep_stringify_keys)
+      data = body["data"] || {}
+
+      raise Error, "Upload failed" unless response.success? && body["success"]
 
       {
-        view_url: response.body.dig("data", "url"),
-        delete_url: response.body.dig("data", "delete_url"),
-        time: response.body.dig("data", "time")
+        img_url: data["url"],
+        del_url: data["delete_url"],
+        date_time: Time.current.iso8601
       }
     end
 

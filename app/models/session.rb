@@ -22,6 +22,14 @@ class Session < ApplicationRecord
 
   scope :by_cycle, -> { order(:cycle, :cycle_length) }
 
+  def as_json(options = nil)
+    options = (options || {}).deep_dup
+    included = options[:include].is_a?(Hash) ? options[:include] : {}
+    included[:payment_methods] ||= {}
+    options[:include] = included
+    super(options)
+  end
+
   before_create :generate_session_code
   before_create :initialize_comments
 

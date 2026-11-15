@@ -6,7 +6,7 @@ class Pos::SessionsController < ApplicationController
 """
 
   def index
-    sessions = Session.by_cycle.includes(:client, :session_creator, session_therapists: :therapist)
+    sessions = Session.by_cycle.includes(:client, :session_creator, :payment_methods, session_therapists: :therapist)
     if params[:client_id].present?
       sessions = sessions.where(client_id: params[:client_id])
     elsif params[:phone].present?
