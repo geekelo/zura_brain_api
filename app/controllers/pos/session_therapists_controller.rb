@@ -1,6 +1,6 @@
 class Pos::SessionTherapistsController < ApplicationController
   def create
-    return unless authorized?(session)
+    
     therapist = Therapist.find_by(work_name: params[:name])
     if therapist.nil?
       render json: { error: "Therapist not found" }, status: :not_found
@@ -12,6 +12,7 @@ class Pos::SessionTherapistsController < ApplicationController
       return
     end
 
+    return unless authorized?(session)
 
     session_therapist = SessionTherapist.new(
       session_therapist_params.merge(therapist_id: therapist.id, session_id: session.id)
