@@ -26,8 +26,8 @@ class Pos::SessionTherapistsController < ApplicationController
     therapist = set_therapist(params[:code])
     return if therapist.nil?
 
-
-    session_therapist = SessionTherapist.find_by(session_id: session.id, therapist_id: therapist.id) 
+    therapist_id = Therapist.find_by(work_name: params[:name]).id
+    session_therapist = SessionTherapist.find_by(session_id: session.id, therapist_id: therapist_id) 
     if session_therapist.nil?
       render json: { error: "Session therapist not found" }, status: :not_found
       return
