@@ -22,6 +22,43 @@ class Pos::PaymentMethodsController < ApplicationController
     end
   end
 
+  def upload_receipt
+    payment_method = set_payment_method
+    return if payment_method.nil?
+
+    file = params[:receipt]
+    if file.blank?
+      render json: { error: "Receipt file is required" }, status: :bad_request
+      return
+    end
+
+    uploaded = Pos::ImgbbUpload.call(file, name: receipt_name(payment_method))
+    uploaded_at = Time.current
+    receipts = payment_method.payment_url.to_a
+    receipt = {
+      "view_url" => uploaded[:view_url],
+      "delete_url" => uploaded[:delete_url],
+      "uploaded_at" => uploaded_at.iso8601,
+      "time" => uploaded[:time].to_s
+    }
+    index = params[:index].presence&.to_i
+    if index && receipts[index]
+      receipts[index] = receipt
+    else
+      receipts << receipt
+    end
+    payment_method.payment_url = receipts
+    payment_method.receipt_uploaded_at = uploaded_at
+
+    if payment_method.save
+      render json: payment_method, status: :ok
+    else
+      render json: { errors: payment_method.errors.full_messages }, status: :unprocessable_entity
+    end
+  rescue Pos::ImgbbUpload::Error, KeyError => error
+    render json: { error: error.message }, status: :bad_gateway
+  end
+
   def destroy
     payment_method = set_payment_method
     return if payment_method.nil?
@@ -43,6 +80,10 @@ class Pos::PaymentMethodsController < ApplicationController
       return
     end
     session
+  end
+
+  def receipt_name(payment_method)
+    params[:name].presence || "receipt-#{payment_method.id}-#{payment_method.payment_url.to_a.size + 1}"
   end
 
   def set_payment_method

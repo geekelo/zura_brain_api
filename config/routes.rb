@@ -27,7 +27,11 @@ Rails.application.routes.draw do
     match "admin_notes/:admin_note_id", to: "admin_notes#update", via: [:patch, :put]
     delete "admin_notes/:an", to: "admin_notes#destroy"
 
-    resources :payment_methods, only: [:create, :update, :destroy]
+    resources :payment_methods, only: [:create, :update, :destroy] do
+      member do
+        post :receipt, action: :upload_receipt
+      end
+    end
     resources :main_account_expenses, only: [:create, :update, :destroy]
 
     resources :therapist_accounts, only: [:create]
