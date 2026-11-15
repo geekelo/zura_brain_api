@@ -6,7 +6,7 @@ class Pos::SessionsController < ApplicationController
 """
 
   def index
-    sessions = Session.by_cycle.includes(:client)
+    sessions = Session.by_cycle.includes(:client, :session_creator, session_therapists: :therapist)
     if params[:client_id].present?
       sessions = sessions.where(client_id: params[:client_id])
     elsif params[:phone].present?
@@ -17,7 +17,7 @@ class Pos::SessionsController < ApplicationController
       end
       sessions = sessions.where(client: client)
     end
-    render json: sessions.as_json(include: { client: { only: [:name, :phone] }, session_creator: { only: [:work_name] } }), status: :ok
+    render json: sessions.map { |session_record| session_json(session_record) }, status: :ok
   end
 
   def create
@@ -199,6 +199,19 @@ class Pos::SessionsController < ApplicationController
   end
 
   private
+
+  def session_json(session_record)
+    session_record.as_json(
+      include: {
+        client: { only: [:name, :phone] },
+        session_creator: { only: [:work_name] }
+      }
+    ).merge(
+      "session_therapists" => session_record.session_therapists.map { |link|
+        { "name" => link.therapist&.work_name, "role" => link.role }
+      }
+    )
+  end
 
   def session_params
     params.require(:session).permit(:session_type, :massage_type, :lunez, :amount, :hands)
