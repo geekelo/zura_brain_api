@@ -1,8 +1,9 @@
 class Pos::ClientsController < ApplicationController
 
   def index
-    clients = Client.search(params[:search])
-    render json: clients, status: :ok
+    clients = Client.search(params[:search]).to_a
+    counts = session_counts_by_client(clients)
+    render json: clients.map { |client| client_json(client, counts[client.id]) }, status: :ok
   end
 
   def show
@@ -84,5 +85,26 @@ class Pos::ClientsController < ApplicationController
 
   def client_params
     params.require(:client).permit(:name, :phone, :cycle, :cycle_length, :sex, :adult, other_phones: [])
+  end
+
+  def session_counts_by_client(clients)
+    grouped = Session.where(client_id: clients.map(&:id)).group(:client_id, :status).count
+    counts = Hash.new { |by_client, client_id| by_client[client_id] = Hash.new(0) }
+    grouped.each do |(client_id, status), total|
+      counts[client_id][status] = total
+      counts[client_id][:total] += total
+    end
+    counts
+  end
+
+  def client_json(client, counts)
+    counts ||= {}
+    client.as_json.except("id").merge(
+      "total_sessions" => counts[:total].to_i,
+      "completed_sessions" => counts["completed"].to_i,
+      "pending_sessions" => counts["pending"].to_i,
+      "disputed_sessions" => counts["disputed"].to_i,
+      "ongoing_sessions" => counts["started"].to_i
+    )
   end
 end
