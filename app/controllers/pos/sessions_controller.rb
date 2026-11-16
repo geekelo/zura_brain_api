@@ -162,10 +162,14 @@ class Pos::SessionsController < ApplicationController
       if session.status == "completed"
         session.session_history["completed"] = true
       end
-      render json: session, status: :ok
+      if session.status == "uncompleted"
+        session.session_history["completed"] = false
+      end
+      session.update(session_history: session.session_history)
     else
       render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
     end
+    render json: session, status: :ok
   end
 
   def start_end_session
@@ -192,6 +196,7 @@ class Pos::SessionsController < ApplicationController
       if session.end_time.present?
         session.session_history["ended"] = true
       end
+      session.update(session_history: session.session_history)
       render json: session, status: :ok
     else
       render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
