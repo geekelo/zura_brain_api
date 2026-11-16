@@ -2,9 +2,9 @@ class Admin::TherapistsController < ApplicationController
   def index
     therapists = Therapist.all
     therapists = therapists.where(active: ActiveModel::Type::Boolean.new.cast(params[:active])) if params.key?(:active)
-    # don't include therapist code in the response
-    therapists = therapists.select(:work_name, :active)
-    render json: therapists.order(:work_name), status: :ok
+    # list active first and then inactive
+    therapists = therapists.order(active: :desc)
+    render json: therapists, status: :ok
   end
 
   def show
