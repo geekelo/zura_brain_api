@@ -15,10 +15,13 @@ class Admin::TherapistsController < ApplicationController
       return
     end
 
-    render json: therapist.as_json.merge(
+    render json: {
+      "work_name" => therapist.work_name,
+      "code" => therapist.code,
+      "active" => therapist.active,
       "earnings" => earnings(therapist),
       "account_summaries" => account_summaries(therapist)
-    ), status: :ok
+    }, status: :ok
   end
 
   def create
@@ -76,12 +79,12 @@ class Admin::TherapistsController < ApplicationController
 
     {
       "session_therapist" => session_links.map { |link| session_therapist_earning(link) },
-      "payins" => payins.map(&:as_json),
-      "payouts" => payouts.map(&:as_json),
+      "payins" => payins.map { |entry| entry_json(entry) },
+      "payouts" => payouts.map { |entry| entry_json(entry) },
       "totals" => {
-        "session_therapist" => session_links.sum { |link| link.tip_balance.to_d },
-        "payins" => payins.sum { |entry| entry.amount.to_d },
-        "payouts" => payouts.sum { |entry| entry.amount.to_d }
+        "session_therapist" => money_sum(session_links, &:tip_balance),
+        "payins" => money_sum(payins, &:amount),
+        "payouts" => money_sum(payouts, &:amount)
       }
     }
   end
@@ -92,7 +95,7 @@ class Admin::TherapistsController < ApplicationController
       "tip_amount" => link.tip_amount,
       "tip_balance" => link.tip_balance,
       "session_code" => link.session&.session_code,
-      "session_date" => link.session&.session_date,
+      "session_date" => link.session&.session_date&.in_time_zone&.to_date&.iso8601,
       "cycle" => link.session&.cycle,
       "cycle_length" => link.session&.cycle_length
     }
@@ -111,10 +114,33 @@ class Admin::TherapistsController < ApplicationController
         month: params[:month],
         year: params[:year]
       )
-      [summary.as_json]
+      [account_summary_json(summary)]
     else
-      TherapistAccount.where(therapist: therapist).order(year: :desc, month: :desc).map(&:as_json)
+      TherapistAccount.where(therapist: therapist).order(year: :desc, month: :desc).map { |summary| account_summary_json(summary) }
     end
+  end
+
+  def entry_json(entry)
+    {
+      "amount" => entry.amount,
+      "type" => entry.type,
+      "description" => entry.description
+    }
+  end
+
+  def account_summary_json(summary)
+    {
+      "month" => summary.month,
+      "year" => summary.year,
+      "total_therapist_payin" => summary.total_therapist_payin,
+      "total_therapist_payout" => summary.total_therapist_payout,
+      "total_tip_balance" => summary.total_tip_balance,
+      "balance" => summary.balance
+    }
+  end
+
+  def money_sum(records, &block)
+    records.to_a.sum(0.to_d) { |record| block.call(record).to_d }
   end
 
   def requested_period?
@@ -124,9 +150,11 @@ class Admin::TherapistsController < ApplicationController
   def invalid_period?
     return false unless requested_period?
 
-    month = params[:month].to_i
-    year = params[:year].to_i
-    !((1..12).cover?(month) && year.positive?)
+    month = params[:month].to_s
+    year = params[:year].to_s
+    return true unless month.match?(/\A[1-9]\d?\z/) && year.match?(/\A[1-9]\d*\z/)
+
+    !((1..12).cover?(month.to_i) && year.to_i.positive?)
   end
 
   def period
