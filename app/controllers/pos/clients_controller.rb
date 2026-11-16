@@ -8,7 +8,7 @@ class Pos::ClientsController < ApplicationController
 
   def show
     client = Client.find(params[:id])
-    render json: client, status: :ok
+    render json: client_attributes(client), status: :ok
   end
 
   def create
@@ -18,7 +18,7 @@ class Pos::ClientsController < ApplicationController
 
     client = Client.new(client_params.merge(created_by: created_by_name))
     if client.save
-        render json: client, status: :created
+        render json: client_attributes(client), status: :created
     else
         render json: { errors: client.errors.full_messages }, status: :unprocessable_entity
     end
@@ -33,7 +33,7 @@ class Pos::ClientsController < ApplicationController
     end
 
     if client.update(client_params)
-      render json: client, status: :ok
+      render json: client_attributes(client), status: :ok
     else
       render json: { errors: client.errors.full_messages }, status: :unprocessable_entity
     end
@@ -44,7 +44,7 @@ class Pos::ClientsController < ApplicationController
     return if client.nil?
 
     if client.update(client_preferences: params[:client_preferences])
-      render json: client, status: :ok
+      render json: client_attributes(client), status: :ok
     else
       render json: { errors: client.errors.full_messages }, status: :unprocessable_entity
     end
@@ -97,9 +97,13 @@ class Pos::ClientsController < ApplicationController
     counts
   end
 
+  def client_attributes(client)
+    client.as_json.except("id", :id)
+  end
+
   def client_json(client, counts)
     counts ||= {}
-    client.as_json.except("id").merge(
+    client_attributes(client).merge(
       "total_sessions" => counts[:total].to_i,
       "completed_sessions" => counts["completed"].to_i,
       "pending_sessions" => counts["pending"].to_i,

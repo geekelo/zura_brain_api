@@ -1,6 +1,10 @@
 class Client < ApplicationRecord
     has_many :sessions, dependent: :destroy
 
+    def as_json(options = nil)
+      super(options).except("id", :id)
+    end
+
     def self.search(term)
         return all if term.blank?
 
