@@ -2,6 +2,7 @@ class Pos::PaymentMethodsController < ApplicationController
   def create
     session = set_session
     return if session.nil?
+    return unless authorized?(session)
 
     payment_method = PaymentMethod.new(payment_method_params.merge(session_id: session.id))
     attach_receipt(payment_method) if params[:receipt].present?
@@ -17,6 +18,7 @@ class Pos::PaymentMethodsController < ApplicationController
   def update
     payment_method = set_payment_method
     return if payment_method.nil?
+    return unless authorized?(payment_method.session)
 
     payment_method.assign_attributes(payment_method_params) if params[:payment_method].present?
     attach_receipt(payment_method) if params[:receipt].present?
@@ -33,6 +35,7 @@ class Pos::PaymentMethodsController < ApplicationController
   def upload_receipt
     payment_method = set_payment_method
     return if payment_method.nil?
+    return unless authorized?(payment_method.session)
 
     file = params[:receipt]
     if file.blank?
@@ -54,9 +57,20 @@ class Pos::PaymentMethodsController < ApplicationController
   def destroy
     payment_method = set_payment_method
     return if payment_method.nil?
+    return unless authorized?(payment_method.session)
 
-    payment_method.destroy
-    render json: { message: "Payment method deleted successfully" }, status: :ok
+    if admin_delete?
+      del_urls = delete_urls(payment_method)
+      payment_method.destroy
+      render json: {
+        message: "Payment method deleted successfully",
+        del_url: del_urls.first,
+        del_urls: del_urls
+      }, status: :ok
+    else
+      payment_method.update!(deleted_at: Time.current)
+      render json: { message: "Payment method deleted successfully" }, status: :ok
+    end
   end
 
   private
@@ -92,8 +106,20 @@ class Pos::PaymentMethodsController < ApplicationController
     [client.name, client.phone, session_record.cycle, session_record.cycle_length].compact.join(" ")
   end
 
+  def admin_delete?
+    [params[:code], params[:th], params[:tc]].any? { |code| AdminCode.matches?(code) }
+  end
+
+  def delete_urls(payment_method)
+    Array(payment_method.payment_url).filter_map do |receipt|
+      next unless receipt.is_a?(Hash)
+
+      receipt["del_url"] || receipt[:del_url]
+    end
+  end
+
   def set_payment_method
-    payment_method = PaymentMethod.find_by(id: params[:id])
+    payment_method = PaymentMethod.active.find_by(id: params[:id])
     if payment_method.nil?
       render json: { error: "Payment method not found" }, status: :not_found
       return

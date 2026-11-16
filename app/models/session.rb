@@ -12,6 +12,7 @@ class Session < ApplicationRecord
            dependent: :destroy
 
   has_many :payment_methods,
+           -> { where(deleted_at: nil) },
            dependent: :destroy
 
   has_many :therapists,
