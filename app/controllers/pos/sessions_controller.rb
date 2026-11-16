@@ -74,7 +74,7 @@ class Pos::SessionsController < ApplicationController
   end
 
   def destroy
-    session = Session.find_by(id: params[:id])
+    session = Session.find_by(session_code: params[:ss])
     if session.nil?
       render json: { error: "Session not found" }, status: :not_found
       return

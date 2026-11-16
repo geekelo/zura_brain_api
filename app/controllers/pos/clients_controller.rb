@@ -7,8 +7,12 @@ class Pos::ClientsController < ApplicationController
   end
 
   def show
-    client = Client.find(params[:id])
-    render json: client_attributes(client), status: :ok
+    client = Client.find_by(params[:phone])
+    if client.nil?
+      render json: { error: "Client not found" }, status: :not_found
+      return
+    end
+    render json: client_json(client, session_counts_by_client([client])[client.id]), status: :ok
   end
 
   def create
