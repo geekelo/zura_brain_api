@@ -149,27 +149,28 @@ class Pos::SessionsController < ApplicationController
       return
     end
 
-    return unless authorized?(session)
+    if %w[completed disputed].include?(params[:status].to_s)
+      unless admin_authorized?
+        render json: { error: "Not authorized" }, status: :unauthorized
+        return
+      end
+    else
+      return unless authorized?(session)
+    end
 
     session.status = params[:status]
+    history = (session.session_history || {}).to_h.stringify_keys
+    history["started"] = true if session.start_time.present?
+    history["ended"] = true if session.end_time.present?
+    history["completed"] = true if session.status == "completed"
+    history["completed"] = false if session.status == "disputed"
+    session.session_history = history
+
     if session.save
-      if session.start_time.present?
-        session.session_history["started"] = true
-      end
-      if session.end_time.present?
-        session.session_history["ended"] = true
-      end
-      if session.status == "completed"
-        session.session_history["completed"] = true
-      end
-      if session.status == "uncompleted"
-        session.session_history["completed"] = false
-      end
-      session.update(session_history: session.session_history)
+      render json: session, status: :ok
     else
       render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
     end
-    render json: session, status: :ok
   end
 
   def start_end_session
@@ -189,14 +190,12 @@ class Pos::SessionsController < ApplicationController
       session.status = "started"
     end
 
+    history = (session.session_history || {}).to_h.stringify_keys
+    history["started"] = true if session.start_time.present?
+    history["ended"] = true if session.end_time.present?
+    session.session_history = history
+
     if session.save
-      if session.start_time.present?
-        session.session_history["started"] = true
-      end
-      if session.end_time.present?
-        session.session_history["ended"] = true
-      end
-      session.update(session_history: session.session_history)
       render json: session, status: :ok
     else
       render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
