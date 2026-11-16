@@ -18,11 +18,16 @@ class Pos::PaymentMethodsController < ApplicationController
     payment_method = set_payment_method
     return if payment_method.nil?
 
-    if payment_method.update(payment_method_params)
+    payment_method.assign_attributes(payment_method_params) if params[:payment_method].present?
+    attach_receipt(payment_method) if params[:receipt].present?
+
+    if payment_method.save
       render json: payment_method, status: :ok
     else
       render json: { errors: payment_method.errors.full_messages }, status: :unprocessable_entity
     end
+  rescue Pos::ImgbbUpload::Error, KeyError => error
+    render json: { error: error.message }, status: :bad_gateway
   end
 
   def upload_receipt
@@ -82,7 +87,9 @@ class Pos::PaymentMethodsController < ApplicationController
   end
 
   def receipt_name(payment_method)
-    params[:name].presence || "receipt-#{payment_method.id}-#{payment_method.payment_url.to_a.size + 1}"
+    session_record = payment_method.session
+    client = session_record.client
+    [client.name, client.phone, session_record.cycle, session_record.cycle_length].compact.join(" ")
   end
 
   def set_payment_method
