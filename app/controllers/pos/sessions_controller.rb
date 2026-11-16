@@ -142,6 +142,30 @@ class Pos::SessionsController < ApplicationController
     end
   end
 
+  def resolve_comment
+    session = Session.find_by(session_code: params[:ss])
+    if session.nil?
+      render json: { error: "Session not found" }, status: :not_found
+      return
+    end
+
+    comments = Array(session.comments).map { |entry| entry.to_h.stringify_keys }
+    index = params[:index].to_i
+    unless params[:index].to_s.match?(/\A\d+\z/) && comments[index]
+      render json: { error: "Comment not found" }, status: :not_found
+      return
+    end
+
+    comments[index]["resolved"] = ActiveModel::Type::Boolean.new.cast(params[:resolved])
+    session.comments = comments
+
+    if session.save
+      render json: session, status: :ok
+    else
+      render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   def update_status
     session = Session.find_by(session_code: params[:ss])
     if session.nil?
@@ -241,11 +265,12 @@ class Pos::SessionsController < ApplicationController
 
   def normalized_comments
     Array(params[:comments]).map do |entry|
-      permitted = entry.permit(:name, :comment, :date_time)
+      permitted = entry.permit(:name, :comment, :date_time, :resolved)
       {
         "name" => permitted[:name].to_s,
         "comment" => permitted[:comment].to_s,
-        "date_time" => permitted[:date_time].presence || Time.current.iso8601
+        "date_time" => permitted[:date_time].presence || Time.current.iso8601,
+        "resolved" => ActiveModel::Type::Boolean.new.cast(permitted[:resolved]) || false
       }
     end
   end

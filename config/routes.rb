@@ -10,6 +10,7 @@ Rails.application.routes.draw do
     get "sessions", to: "sessions#index"
     post "sessions", to: "sessions#create"
     match "sessions/:ss/comments", to: "sessions#add_comment", via: [:patch, :put]
+    match "sessions/:ss/comments/resolve", to: "sessions#resolve_comment", via: [:patch, :put]
     match "sessions/:ss/transaction_id", to: "sessions#update_transaction_id", via: [:patch, :put]
     match "sessions/:ss/status", to: "sessions#update_status", via: [:patch, :put]
     match "sessions/:ss/verify_payment", to: "sessions#verify_payment", via: [:patch, :put]
