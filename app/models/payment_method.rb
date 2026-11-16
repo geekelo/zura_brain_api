@@ -3,7 +3,7 @@ class PaymentMethod < ApplicationRecord
 
   belongs_to :session
 
-  STATUSES = %w[refunded ok nonrefunded].freeze
+  STATUSES = %w[pending refunded ok nonrefunded].freeze
 
   scope :active, -> { where(deleted_at: nil) }
 

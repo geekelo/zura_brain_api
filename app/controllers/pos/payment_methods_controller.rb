@@ -20,6 +20,13 @@ class Pos::PaymentMethodsController < ApplicationController
     return if payment_method.nil?
     return unless authorized?(payment_method.session)
 
+    # A non-admin may only set the status to pending. Every other status requires the admin code.
+    requested_status = params.dig(:payment_method, :status).to_s
+    unless admin_authorized? || requested_status == "pending"
+      render json: { error: "Not authorized" }, status: :unauthorized
+      return
+    end
+
     payment_method.assign_attributes(payment_method_params) if params[:payment_method].present?
     attach_receipt(payment_method) if params[:receipt].present?
 
