@@ -57,17 +57,23 @@ class Pos::PaymentMethodsController < ApplicationController
   def destroy
     payment_method = set_payment_method
     return if payment_method.nil?
+    # Admin code, or the session creator's therapist code.
     return unless authorized?(payment_method.session)
 
-    if admin_delete?
+    # Remove the row when the caller is an admin, or when there is no receipt.
+    # A non-admin can only fully delete a payment method whose payment_url is [].
+    if admin_delete? || payment_url_empty?(payment_method)
       del_urls = delete_urls(payment_method)
       payment_method.destroy
-      render json: {
-        message: "Payment method deleted successfully",
-        del_url: del_urls.first,
-        del_urls: del_urls
-      }, status: :ok
+      body = { message: "Payment method deleted successfully" }
+      # Admin deletes return the ImgBB delete URL so the image can be removed in a browser.
+      if admin_delete?
+        body[:del_url] = del_urls.first
+        body[:del_urls] = del_urls
+      end
+      render json: body, status: :ok
     else
+      # A receipt is stored and the caller is not an admin: keep the row and hide it.
       payment_method.update!(deleted_at: Time.current)
       render json: { message: "Payment method deleted successfully" }, status: :ok
     end
@@ -104,6 +110,10 @@ class Pos::PaymentMethodsController < ApplicationController
     session_record = payment_method.session
     client = session_record.client
     [client.name, client.phone, session_record.cycle, session_record.cycle_length].compact.join(" ")
+  end
+
+  def payment_url_empty?(payment_method)
+    Array(payment_method.payment_url).empty?
   end
 
   def admin_delete?
