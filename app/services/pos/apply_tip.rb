@@ -27,7 +27,7 @@ module Pos
         extra_account = ExtraAccountPayinPayout.find_or_initialize_by(session_therapist: @session_therapist, type: "payin")
         extra_account.update!(amount: extra_amount, description: "Tip for #{@session_therapist.therapist.work_name}")
 
-        tech_account = TechPayinPayout.find_or_initialize_by(extra_account: extra_account, type: "payin")
+        tech_account = TechPayinsPayout.find_or_initialize_by(extra_account: extra_account, type: "payin")
         tech_account.update!(amount: tech_amount, description: "Tip for #{@session_therapist.therapist.work_name}")
 
         occurred_on = @session_therapist.session.session_date || Time.current

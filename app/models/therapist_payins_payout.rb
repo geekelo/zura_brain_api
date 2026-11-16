@@ -1,4 +1,4 @@
-class TherapistPayinPayout < ApplicationRecord
+class TherapistPayinsPayout < ApplicationRecord
   self.inheritance_column = :_type_disabled
 
   belongs_to :therapist

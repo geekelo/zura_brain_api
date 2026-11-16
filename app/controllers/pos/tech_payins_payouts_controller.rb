@@ -1,6 +1,6 @@
 class Pos::TechPayinsPayoutsController < ApplicationController
   def create
-    tech_payin_payout = TechPayinPayout.new(tech_payin_payout_params)
+    tech_payin_payout = TechPayinsPayout.new(tech_payin_payout_params)
     if tech_payin_payout.save
       render json: tech_payin_payout, status: :created
     else
@@ -32,7 +32,7 @@ class Pos::TechPayinsPayoutsController < ApplicationController
   end
 
   def set_tech_payin_payout
-    tech_payin_payout = TechPayinPayout.find_by(id: params[:tech_account_id])
+    tech_payin_payout = TechPayinsPayout.find_by(id: params[:tech_account_id])
     if tech_payin_payout.nil?
       render json: { error: "Tech payin payout not found" }, status: :not_found
       return

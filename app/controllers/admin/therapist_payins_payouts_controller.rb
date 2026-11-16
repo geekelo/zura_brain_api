@@ -1,6 +1,6 @@
 class Admin::TherapistPayinsPayoutsController < ApplicationController
   def create
-    therapist_payin_payout = TherapistPayinPayout.new(therapist_payin_payout_params)
+    therapist_payin_payout = TherapistPayinsPayout.new(therapist_payin_payout_params)
     if therapist_payin_payout.save
       refresh_therapist_account(therapist_payin_payout)
       render json: therapist_payin_payout, status: :created
@@ -10,7 +10,7 @@ class Admin::TherapistPayinsPayoutsController < ApplicationController
   end
 
   def update
-    therapist_payin_payout = TherapistPayinPayout.find_by(id: params[:id])
+    therapist_payin_payout = TherapistPayinsPayout.find_by(id: params[:id])
     if therapist_payin_payout.nil?
       render json: { error: "Therapist payin payout not found" }, status: :not_found
       return
@@ -21,7 +21,7 @@ class Admin::TherapistPayinsPayoutsController < ApplicationController
   end
 
   def destroy
-    therapist_payin_payout = TherapistPayinPayout.find_by(id: params[:id])
+    therapist_payin_payout = TherapistPayinsPayout.find_by(id: params[:id])
     if therapist_payin_payout.nil?
       render json: { error: "Therapist payin payout not found" }, status: :not_found
       return

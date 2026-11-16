@@ -35,7 +35,7 @@ module Pos
     private
 
     def sum_amounts(entry_type)
-      TherapistPayinPayout
+      TherapistPayinsPayout
         .where(therapist: @therapist, type: entry_type, created_at: period)
         .sum(:amount)
         .to_d

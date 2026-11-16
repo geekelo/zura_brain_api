@@ -99,7 +99,7 @@ class Admin::TherapistsController < ApplicationController
   end
 
   def therapist_entries(therapist, entry_type)
-    entries = TherapistPayinPayout.where(therapist: therapist, type: entry_type)
+    entries = TherapistPayinsPayout.where(therapist: therapist, type: entry_type)
     entries = entries.where(created_at: period) if period
     entries.order(created_at: :desc)
   end
