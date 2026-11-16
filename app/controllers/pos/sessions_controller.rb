@@ -40,7 +40,7 @@ class Pos::SessionsController < ApplicationController
     if session.save
       Pos::AssignSessionCycle.sync_client(client)
       refresh_account_summaries(session.session_date)
-      render json: session, status: :created
+      render json: session_json(session), status: :created
     else
       render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
     end
@@ -67,7 +67,7 @@ class Pos::SessionsController < ApplicationController
     previous_date = session.session_date
     if session.update(session_update_params)
       refresh_account_summaries(previous_date, session.session_date)
-      render json: session, status: :ok
+      render json: session_json(session), status: :ok
     else
       render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
     end
