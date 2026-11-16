@@ -32,17 +32,19 @@ class Pos::SessionTherapistsController < ApplicationController
     end
     return unless authorized?(session)
 
-    therapist = set_therapist(params[:code])
-    return if therapist.nil?
+    therapist = Therapist.find_by(work_name: params[:name])
+    if therapist.nil?
+      render json: { error: "Therapist not found" }, status: :not_found
+      return
+    end
 
-    therapist_id = Therapist.find_by(work_name: params[:name]).id
-    session_therapist = SessionTherapist.find_by(session_id: session.id, therapist_id: therapist_id) 
+    session_therapist = SessionTherapist.find_by(session_id: session.id, therapist_id: therapist.id)
     if session_therapist.nil?
       render json: { error: "Session therapist not found" }, status: :not_found
       return
     end
-    
-    if session_therapist.tip_amount > 0
+
+    if session_therapist.tip_amount.to_d > 0
       render json: { error: "Session therapist has tip amount" }, status: :unprocessable_entity
       return
     end
@@ -94,15 +96,6 @@ class Pos::SessionTherapistsController < ApplicationController
   end
 
   private
-
-  def set_therapist
-    therapist = Therapist.find_by(code: params[:code])
-    if therapist.nil?
-      render json: { error: "Therapist not found" }, status: :not_found
-      return
-    end
-    therapist
-  end
 
   def decimal_tip_amount
     BigDecimal(params[:tip_amount].to_s)
