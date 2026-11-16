@@ -57,12 +57,12 @@ class Pos::SessionTherapistsController < ApplicationController
   end
 
   def tip
-    admin_code = params[:admin_code]
+    admin_code = params[:admin_code].presence || params[:tc]
     if admin_code.nil?
       render json: { error: "Admin code is required" }, status: :bad_request
       return
     end
-    if !AdminCode.matches?(admin_code)
+    unless AdminCode.matches?(admin_code)
       render json: { error: "Not authorized to tip" }, status: :unauthorized
       return
     end
@@ -73,8 +73,13 @@ class Pos::SessionTherapistsController < ApplicationController
       return
     end
 
+    therapist = Therapist.find_by(work_name: params[:name])
+    if therapist.nil?
+      render json: { error: "Therapist not found" }, status: :not_found
+      return
+    end
 
-    session_therapist = SessionTherapist.find_by(id: params[:stid])
+    session_therapist = SessionTherapist.find_by(session_id: session_record.id, therapist_id: therapist.id)
     if session_therapist.nil?
       render json: { error: "Session therapist not found" }, status: :not_found
       return
@@ -88,6 +93,7 @@ class Pos::SessionTherapistsController < ApplicationController
 
     result = Pos::ApplyTip.call(session_therapist: session_therapist, tip_amount: tip_amount)
     render json: {
+      name: therapist.work_name,
       tip_amount: result[:session_therapist].tip_amount,
       tip_balance: result[:session_therapist].tip_balance,
       extra_account_amount: result[:extra_account].amount,
