@@ -1,17 +1,30 @@
 module Pos
   class AssignSessionCycle
     def self.apply_to_new(session)
+      if session.off_cycle
+        session.cycle = session.client.cycle.presence || 1
+        session.cycle_length = nil
+        return
+      end
+
       cycle, length = next_for(session.client)
       session.cycle = cycle
       session.cycle_length = length
     end
 
     def self.readjust(client)
+      reflected_cycle = 1
       cycle = 1
       length = numbered_lengths.first
 
       client.sessions.order(:session_date, :id).each do |session|
+        if session.off_cycle
+          session.update!(cycle: reflected_cycle, cycle_length: nil)
+          next
+        end
+
         session.update!(cycle: cycle, cycle_length: length)
+        reflected_cycle = cycle
         cycle, length = advance(cycle, length)
       end
 
@@ -56,7 +69,7 @@ module Pos
     end
 
     def self.latest_session(client)
-      client.sessions.order(session_date: :desc, id: :desc).first
+      client.sessions.where(off_cycle: false).order(session_date: :desc, id: :desc).first
     end
   end
 end

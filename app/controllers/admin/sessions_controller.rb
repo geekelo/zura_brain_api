@@ -38,7 +38,7 @@ class Admin::SessionsController < ApplicationController
 
  
     if session.save
-      Pos::AssignSessionCycle.sync_client(client)
+      Pos::AssignSessionCycle.sync_client(client) unless session.off_cycle
       refresh_account_summaries(session.session_date)
       render json: session_json(session), status: :created
     else
@@ -104,7 +104,7 @@ class Admin::SessionsController < ApplicationController
 
     session.transaction_id = params[:transaction_id]
     if session.save
-      render json: session, status: :ok
+      render json: session_json(session), status: :ok
     else
       render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
     end
@@ -124,7 +124,7 @@ class Admin::SessionsController < ApplicationController
 
     session.session_history = session.session_history.to_h.merge("payment_verified" => true)
     if session.save
-      render json: session, status: :ok
+      render json: session_json(session), status: :ok
     else
       render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
     end
@@ -139,7 +139,7 @@ class Admin::SessionsController < ApplicationController
 
     session.comments = normalized_comments
     if session.save
-      render json: session, status: :ok
+      render json: session_json(session), status: :ok
     else
       render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
     end
@@ -163,7 +163,7 @@ class Admin::SessionsController < ApplicationController
     session.comments = comments
 
     if session.save
-      render json: session, status: :ok
+      render json: session_json(session), status: :ok
     else
       render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
     end
@@ -194,7 +194,7 @@ class Admin::SessionsController < ApplicationController
     session.session_history = history
 
     if session.save
-      render json: session, status: :ok
+      render json: session_json(session), status: :ok
     else
       render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
     end
@@ -223,7 +223,7 @@ class Admin::SessionsController < ApplicationController
     session.session_history = history
 
     if session.save
-      render json: session, status: :ok
+      render json: session_json(session), status: :ok
     else
       render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
     end
@@ -232,20 +232,21 @@ class Admin::SessionsController < ApplicationController
   private
 
   def session_json(session_record)
-    session_record.as_json(
+    loaded = Session.includes(:client, :session_creator, :payment_methods, session_therapists: :therapist).find(session_record.id)
+    loaded.as_json(
       include: {
         client: { only: [:name, :phone] },
         session_creator: { only: [:work_name] }
       }
     ).merge(
-      "session_therapists" => session_record.session_therapists.map { |link|
+      "session_therapists" => loaded.session_therapists.map { |link|
         { "name" => link.therapist&.work_name, "role" => link.role }
       }
     )
   end
 
   def session_params
-    params.require(:session).permit(:session_type, :massage_type, :lunez, :amount, :hands)
+    params.require(:session).permit(:session_type, :massage_type, :lunez, :amount, :hands, :off_cycle)
   end
 
   def session_update_params
