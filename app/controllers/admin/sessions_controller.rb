@@ -117,7 +117,10 @@ class Admin::SessionsController < ApplicationController
       return
     end
 
-    return unless authorized?(session)
+    unless admin_authorized?
+      render json: { error: "Not authorized" }, status: :unauthorized
+      return
+    end
 
     session.session_history = session.session_history.to_h.merge("payment_verified" => true)
     if session.save
