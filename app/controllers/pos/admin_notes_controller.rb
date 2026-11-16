@@ -1,5 +1,5 @@
 class Pos::AdminNotesController < ApplicationController
-  ### ss: session code, st: therapist code, an: admin note id, thr: staff id
+  ### st: creator therapist code, phone: client, ss: session code, th: therapist the note is about, an: admin note id
 
   def index
     render json: AdminNote.all, status: :ok
@@ -9,11 +9,14 @@ class Pos::AdminNotesController < ApplicationController
     therapist = set_therapist(params[:st])
     return if therapist.nil?
 
-    session = set_session(params[:ss])
-    return if session.nil?
+    targets = note_targets
+    return if targets.nil?
+    if targets.empty?
+      render json: { error: "Client, session, or therapist is required" }, status: :unprocessable_entity
+      return
+    end
 
-    staff = params[:thr]
-    admin_note = AdminNote.new(admin_note_params.merge(creator_id: therapist.id, session_id: session.id, therapist_id: staff))
+    admin_note = AdminNote.new(admin_note_params.merge(targets.merge(creator_id: therapist.id)))
     if admin_note.save
       render json: admin_note, status: :created
     else
@@ -76,12 +79,38 @@ class Pos::AdminNotesController < ApplicationController
     params.require(:admin_note).permit(:body, :status)
   end
 
-  def set_session(ss)
-    session = Session.find_by(session_code: ss)
-    if session.nil?
-      render json: { error: "Session not found" }, status: :not_found
-      return
+  # phone: client, ss: session code, th: therapist the note is about.
+  # Returns nil after rendering when a supplied target cannot be found.
+  def note_targets
+    targets = {}
+
+    if params[:phone].present?
+      client = Client.find_by(phone: params[:phone])
+      if client.nil?
+        render json: { error: "Client not found" }, status: :not_found
+        return
+      end
+      targets[:client_id] = client.id
     end
-    session
+
+    if params[:ss].present?
+      session_record = Session.find_by(session_code: params[:ss])
+      if session_record.nil?
+        render json: { error: "Session not found" }, status: :not_found
+        return
+      end
+      targets[:session_id] = session_record.id
+    end
+
+    if params[:th].present?
+      subject = Therapist.find_by(code: params[:th])
+      if subject.nil?
+        render json: { error: "Therapist not found" }, status: :not_found
+        return
+      end
+      targets[:therapist_id] = subject.id
+    end
+
+    targets
   end
 end

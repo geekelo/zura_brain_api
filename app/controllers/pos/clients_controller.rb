@@ -25,7 +25,24 @@ class Pos::ClientsController < ApplicationController
 
   def update
     client = find_client_by_phone
+    return if client.nil?
+    unless admin_authorized?
+      render json: { error: "Not authorized" }, status: :unauthorized
+      return
+    end
+
     if client.update(client_params)
+      render json: client, status: :ok
+    else
+      render json: { errors: client.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  def update_preferences
+    client = find_client_by_phone
+    return if client.nil?
+
+    if client.update(client_preferences: params[:client_preferences])
       render json: client, status: :ok
     else
       render json: { errors: client.errors.full_messages }, status: :unprocessable_entity

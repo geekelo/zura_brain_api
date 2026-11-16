@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   namespace :pos do
+    match "clients/preferences", to: "clients#update_preferences", via: [:patch, :put]
     resources :clients, only: [:index, :show, :create, :update, :destroy]
 
     resources :therapists, only: [:index, :show, :create], param: :code
