@@ -240,7 +240,12 @@ class Admin::SessionsController < ApplicationController
       }
     ).merge(
       "session_therapists" => loaded.session_therapists.map { |link|
-        { "name" => link.therapist&.work_name, "role" => link.role }
+        {
+          "name" => link.therapist&.work_name,
+          "role" => link.role,
+          "tip_amount" => link.tip_amount,
+          "tip_balance" => link.tip_balance
+        }
       }
     )
   end
