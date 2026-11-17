@@ -79,15 +79,21 @@ class Admin::TherapistsController < ApplicationController
     session_links = session_links.order("sessions.session_date DESC")
     payins = therapist_entries(therapist, "payin")
     payouts = therapist_entries(therapist, "payout")
+    sanctions = therapist_sanctions(therapist, "payout")
+    bonuses = therapist_sanctions(therapist, "payin")
 
     {
       "session_therapist" => session_links.map { |link| session_therapist_earning(link) },
       "payins" => payins.map { |entry| entry_json(entry) },
       "payouts" => payouts.map { |entry| entry_json(entry) },
+      "sanctions" => sanctions.map { |sanction| sanction_earning(sanction) },
+      "bonuses" => bonuses.map { |sanction| sanction_earning(sanction) },
       "totals" => {
         "session_therapist" => money_sum(session_links, &:tip_balance),
         "payins" => money_sum(payins, &:amount),
-        "payouts" => money_sum(payouts, &:amount)
+        "payouts" => money_sum(payouts, &:amount),
+        "sanctions" => money_sum(sanctions, &:amount),
+        "bonuses" => money_sum(bonuses, &:amount)
       }
     }
   end
@@ -108,6 +114,22 @@ class Admin::TherapistsController < ApplicationController
     entries = TherapistPayinsPayout.where(therapist: therapist, type: entry_type)
     entries = entries.where(created_at: period) if period
     entries.order(created_at: :desc)
+  end
+
+  def therapist_sanctions(therapist, entry_type)
+    sanctions = Sanction.where(therapist: therapist, type: entry_type)
+    sanctions = sanctions.where(created_at: period) if period
+    sanctions.order(created_at: :desc)
+  end
+
+  def sanction_earning(sanction)
+    {
+      "description" => sanction.description,
+      "amount" => sanction.amount,
+      "type" => sanction.type,
+      "non_therapist" => sanction.non_therapist,
+      "created_at" => sanction.created_at&.utc&.iso8601(0)
+    }
   end
 
   def account_summaries(therapist)
@@ -136,9 +158,7 @@ class Admin::TherapistsController < ApplicationController
       "month" => summary.month,
       "year" => summary.year,
       "total_therapist_payin" => summary.total_therapist_payin,
-      "total_sanctions_payin" => summary.total_sanctions_payin,
       "total_therapist_payout" => summary.total_therapist_payout,
-      "total_sanctions_payout" => summary.total_sanctions_payout,
       "total_tip_balance" => summary.total_tip_balance,
       "balance" => summary.balance
     }

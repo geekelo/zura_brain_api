@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_11_17_144400) do
+ActiveRecord::Schema[7.2].define(version: 2026_11_17_134600) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -251,8 +251,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_17_144400) do
     t.decimal "balance"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.decimal "total_sanctions_payin", precision: 10, scale: 2
-    t.decimal "total_sanctions_payout", precision: 10, scale: 2
     t.index ["therapist_id"], name: "index_therapist_accounts_on_therapist_id"
   end
 
