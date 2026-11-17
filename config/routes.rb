@@ -48,6 +48,7 @@ Rails.application.routes.draw do
     resources :extra_account_payins_payouts, only: [:create, :update, :destroy], param: :extra_account_payin_payout_id
 
     resources :lunez_account_summaries, only: [:create]
+    get "main_accounts", to: "main_accounts#index"
     resources :main_account_summaries, only: [:create]
   end
 
