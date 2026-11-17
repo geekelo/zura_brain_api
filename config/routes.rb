@@ -39,6 +39,7 @@ Rails.application.routes.draw do
     resources :therapist_accounts, only: [:create]
     resources :therapist_payins_payouts, only: [:create, :update, :destroy]
 
+    get "tech_accounts", to: "tech_accounts#index"
     resources :tech_account_summaries, only: [:create]
     resources :tech_payins_payouts, only: [:create, :update, :destroy], param: :tech_account_id
 
