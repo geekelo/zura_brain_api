@@ -1,0 +1,2 @@
+class ClientSupportSummary < ApplicationRecord
+end

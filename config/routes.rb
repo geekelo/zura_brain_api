@@ -51,6 +51,10 @@ Rails.application.routes.draw do
     get "lunez_accounts", to: "lunez_accounts#index"
     get "main_accounts", to: "main_accounts#index"
     resources :main_account_summaries, only: [:create]
+
+    resources :client_supports, only: [:index, :create, :update, :destroy]
+    resources :stakes_accounts, only: [:index, :create, :update, :destroy]
+    resources :sanctions, only: [:index, :create, :update, :destroy]
   end
 
   namespace :pos do
@@ -68,6 +72,7 @@ Rails.application.routes.draw do
     match "sessions/:ss/status", to: "sessions#update_status", via: [:patch, :put]
     match "sessions/:ss/verify_payment", to: "sessions#verify_payment", via: [:patch, :put]
     match "sessions/:ss/times", to: "sessions#start_end_session", via: [:patch, :put]
+    match "sessions/:ss/client_support", to: "sessions#update_client_support", via: [:patch, :put]
     match "sessions/:ss", to: "sessions#update", via: [:patch, :put]
     delete "sessions/:id", to: "sessions#destroy"
 

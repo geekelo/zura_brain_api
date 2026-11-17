@@ -36,14 +36,19 @@ class Admin::SessionsController < ApplicationController
     session = Session.new(session_params.merge(session_creator_id: creator_id, client_id: client.id, session_date: Date.today, session_code: session_code))
     Pos::AssignSessionCycle.apply_to_new(session)
 
- 
-    if session.save
-      Pos::AssignSessionCycle.sync_client(client) unless session.off_cycle
-      refresh_account_summaries(session.session_date)
-      render json: session_json(session), status: :created
-    else
-      render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
+    begin
+      ActiveRecord::Base.transaction do
+        session.save!
+        upsert_client_support!(session)
+      end
+    rescue ActiveRecord::RecordInvalid => e
+      render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
+      return
     end
+
+    Pos::AssignSessionCycle.sync_client(client) unless session.off_cycle
+    refresh_account_summaries(session.session_date)
+    render json: session_json(session), status: :created
   end
 
   def update
@@ -65,12 +70,18 @@ class Admin::SessionsController < ApplicationController
     end
 
     previous_date = session.session_date
-    if session.update(session_update_params)
-      refresh_account_summaries(previous_date, session.session_date)
-      render json: session_json(session), status: :ok
-    else
-      render json: { errors: session.errors.full_messages }, status: :unprocessable_entity
+    begin
+      ActiveRecord::Base.transaction do
+        session.update!(session_update_params)
+        upsert_client_support!(session)
+      end
+    rescue ActiveRecord::RecordInvalid => e
+      render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
+      return
     end
+
+    refresh_account_summaries(previous_date, session.session_date)
+    render json: session_json(session), status: :ok
   end
 
   def destroy
@@ -232,7 +243,7 @@ class Admin::SessionsController < ApplicationController
   private
 
   def session_json(session_record)
-    loaded = Session.includes(:client, :session_creator, :payment_methods, session_therapists: :therapist).find(session_record.id)
+    loaded = Session.includes(:client, :session_creator, :payment_methods, :client_supports, session_therapists: :therapist).find(session_record.id)
     loaded.as_json(
       include: {
         client: { only: [:name, :phone] },
@@ -246,8 +257,44 @@ class Admin::SessionsController < ApplicationController
           "tip_amount" => link.tip_amount,
           "tip_balance" => link.tip_balance
         }
-      }
+      },
+      "client_support" => client_support_json(loaded)
     )
+  end
+
+  def client_support_json(session_record)
+    support = session_record.client_supports.max_by { |row| [row.created_at, row.id] }
+    return nil if support.nil?
+
+    {
+      "description" => support.description,
+      "notes" => support.notes,
+      "amount" => support.amount,
+      "type" => support.type
+    }
+  end
+
+  def upsert_client_support!(session)
+    return unless client_support_param?
+
+    support = session.client_supports.order(created_at: :desc, id: :desc).first || session.client_supports.build
+    support.update!(client_support_attributes)
+  end
+
+  def client_support_param?
+    client_support_source.present?
+  end
+
+  def client_support_source
+    source = params[:client_support]
+    if source.blank? && params[:session].respond_to?(:key?) && params[:session].key?(:client_support)
+      source = params[:session][:client_support]
+    end
+    source
+  end
+
+  def client_support_attributes
+    client_support_source.permit(:description, :notes, :amount, :type)
   end
 
   def session_params
@@ -288,6 +335,8 @@ class Admin::SessionsController < ApplicationController
     dates.compact.map { |date| [date.month, date.year] }.uniq.each do |month, year|
       Pos::UpdateLunezAccount.call(month: month, year: year)
       Pos::UpdateMainAccount.call(month: month, year: year)
+      Pos::UpdateClientSupportSummary.call(month: month, year: year)
+      Pos::UpdateStakesAccountSummary.call(month: month, year: year)
     end
   end
 

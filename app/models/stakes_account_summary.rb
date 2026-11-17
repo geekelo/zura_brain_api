@@ -1,0 +1,2 @@
+class StakesAccountSummary < ApplicationRecord
+end

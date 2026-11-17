@@ -41,7 +41,10 @@ class Admin::TherapistsController < ApplicationController
     therapist = find_therapist
     return if therapist.nil?
 
-    if therapist.update(active: ActiveModel::Type::Boolean.new.cast(params[:active]))
+    attributes = { active: ActiveModel::Type::Boolean.new.cast(params[:active]) }
+    attributes[:code] = params[:new_code].to_s.strip if params[:new_code].present?
+
+    if therapist.update(attributes)
       render json: therapist, status: :ok
     else
       render json: { errors: therapist.errors.full_messages }, status: :unprocessable_entity

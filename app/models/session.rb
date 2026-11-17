@@ -15,6 +15,9 @@ class Session < ApplicationRecord
            -> { where(deleted_at: nil) },
            dependent: :destroy
 
+  has_many :client_supports, dependent: :destroy
+  has_many :stakes_accounts, dependent: :destroy
+
   has_many :therapists,
            through: :session_therapists
 
@@ -22,6 +25,8 @@ class Session < ApplicationRecord
                                 allow_destroy: true
 
   scope :by_cycle, -> { order(:cycle, :cycle_length) }
+
+  after_commit :sync_stakes_account, on: [:create, :update]
 
   def as_json(options = nil)
     options = (options || {}).deep_dup
@@ -42,5 +47,11 @@ class Session < ApplicationRecord
 
   def initialize_comments
     self.comments = [] if comments.blank?
+  end
+
+  def sync_stakes_account
+    return unless previously_new_record? || saved_change_to_amount?
+
+    Pos::SyncStakesAccount.call(self)
   end
 end
