@@ -21,6 +21,7 @@ class Admin::SanctionsController < ApplicationController
     sanction.therapist = therapist
     if sanction.save
       refresh_summary(sanction)
+      refresh_therapist_account(sanction.therapist, sanction.created_at)
       render json: sanction_json(sanction), status: :created
     else
       render json: { errors: sanction.errors.full_messages }, status: :unprocessable_entity
@@ -31,6 +32,9 @@ class Admin::SanctionsController < ApplicationController
     sanction = set_sanction
     return if sanction.nil?
 
+    previous_therapist = sanction.therapist
+    previous_time = sanction.created_at
+
     if changing_therapist?
       therapist = assigned_therapist
       return if performed?
@@ -40,6 +44,8 @@ class Admin::SanctionsController < ApplicationController
 
     if sanction.update(sanction_params)
       refresh_summary(sanction)
+      refresh_therapist_account(previous_therapist, previous_time)
+      refresh_therapist_account(sanction.therapist, sanction.created_at)
       render json: sanction_json(sanction), status: :ok
     else
       render json: { errors: sanction.errors.full_messages }, status: :unprocessable_entity
@@ -50,7 +56,9 @@ class Admin::SanctionsController < ApplicationController
     sanction = set_sanction
     return if sanction.nil?
 
+    therapist = sanction.therapist
     created_at = sanction.created_at
+    refresh_therapist_account(therapist, created_at, exclude_sanction: sanction)
     sanction.destroy
     Pos::UpdateSanctionsSummary.call(month: created_at.month, year: created_at.year)
     render json: { message: "Sanction deleted successfully" }, status: :ok
@@ -138,6 +146,17 @@ class Admin::SanctionsController < ApplicationController
 
   def refresh_summary(sanction)
     Pos::UpdateSanctionsSummary.call(month: sanction.created_at.month, year: sanction.created_at.year)
+  end
+
+  def refresh_therapist_account(therapist, time, exclude_sanction: nil)
+    return if therapist.nil? || time.nil?
+
+    Pos::UpdateTherapistAccount.call(
+      therapist: therapist,
+      month: time.month,
+      year: time.year,
+      exclude_sanction: exclude_sanction
+    )
   end
 
   def requested_period?

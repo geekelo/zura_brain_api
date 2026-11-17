@@ -2,19 +2,20 @@ module Pos
   class UpdateTherapistAccount
     PAYOUT_TYPES = %w[payin payout].freeze
 
-    def self.call(therapist:, month:, year:)
-      new(therapist, month, year).call
+    def self.call(therapist:, month:, year:, exclude_sanction: nil)
+      new(therapist, month, year, exclude_sanction).call
     end
 
-    def initialize(therapist, month, year)
+    def initialize(therapist, month, year, exclude_sanction = nil)
       @therapist = therapist
       @month = month.to_i
       @year = year.to_i
+      @exclude_sanction = exclude_sanction
     end
 
     def call
-      total_therapist_payin = sum_amounts("payin")
-      total_therapist_payout = sum_amounts("payout")
+      total_therapist_payin = sum_amounts("payin") + sum_sanctions("payin")
+      total_therapist_payout = sum_amounts("payout") + sum_sanctions("payout")
       balance = total_therapist_payin + total_tip_balance - total_therapist_payout
 
       account = TherapistAccount.find_or_initialize_by(
@@ -38,6 +39,12 @@ module Pos
         .where(therapist: @therapist, type: entry_type, created_at: period)
         .sum(:amount)
         .to_d
+    end
+
+    def sum_sanctions(entry_type)
+      sanctions = Sanction.where(therapist: @therapist, type: entry_type, created_at: period)
+      sanctions = sanctions.where.not(id: @exclude_sanction.id) if @exclude_sanction&.type == entry_type
+      sanctions.sum(:amount).to_d
     end
 
     def total_tip_balance
