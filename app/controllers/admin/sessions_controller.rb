@@ -270,7 +270,9 @@ class Admin::SessionsController < ApplicationController
       "description" => support.description,
       "notes" => support.notes,
       "amount" => support.amount,
-      "type" => support.type
+      "type" => support.type,
+      "account_type" => support.account_type,
+      "settled" => support.settled
     }
   end
 
@@ -294,7 +296,7 @@ class Admin::SessionsController < ApplicationController
   end
 
   def client_support_attributes
-    client_support_source.permit(:description, :notes, :amount, :type)
+    client_support_source.permit(:description, :notes, :amount, :type, :account_type)
   end
 
   def session_params

@@ -31,6 +31,11 @@ class Admin::ClientSupportsController < ApplicationController
     support = set_client_support
     return if support.nil?
 
+    if support.settled?
+      render json: { error: "Client support is settled" }, status: :unprocessable_entity
+      return
+    end
+
     previous_period = period_for(support)
     if changing_session?
       session_record = find_session
@@ -52,10 +57,35 @@ class Admin::ClientSupportsController < ApplicationController
     support = set_client_support
     return if support.nil?
 
+    if support.settled?
+      render json: { error: "Client support is settled" }, status: :unprocessable_entity
+      return
+    end
+
     previous_period = period_for(support)
     support.destroy
     refresh_period(*previous_period)
     render json: { message: "Client support deleted successfully" }, status: :ok
+  end
+
+  def settle
+    result = Pos::SettleClientSupports.call(
+      ids: params[:client_support_ids],
+      description: params[:description]
+    )
+    if result[:error]
+      render json: { error: result[:error] }, status: result[:status]
+      return
+    end
+
+    entry = result[:entry]
+    render json: {
+      "description" => entry.description,
+      "amount" => entry.amount,
+      "type" => entry.type,
+      "account_type" => result[:supports].first.account_type,
+      "client_supports" => result[:supports].map { |support| support_json(support.reload) }
+    }, status: :ok
   end
 
   private
@@ -73,6 +103,7 @@ class Admin::ClientSupportsController < ApplicationController
       "notes" => support.notes,
       "amount" => support.amount,
       "type" => support.type,
+      "account_type" => support.account_type,
       "settled" => support.settled,
       "session_code" => support.session&.session_code,
       "client_name" => support.session&.client&.name,
@@ -120,7 +151,7 @@ class Admin::ClientSupportsController < ApplicationController
   end
 
   def client_support_params
-    params.require(:client_support).permit(:description, :notes, :amount, :type, :settled)
+    params.require(:client_support).permit(:description, :notes, :amount, :type, :account_type)
   end
 
   def set_client_support

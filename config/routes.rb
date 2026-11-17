@@ -52,6 +52,7 @@ Rails.application.routes.draw do
     get "main_accounts", to: "main_accounts#index"
     resources :main_account_summaries, only: [:create]
 
+    post "client_supports/settle", to: "client_supports#settle"
     resources :client_supports, only: [:index, :create, :update, :destroy]
     resources :stakes_accounts, only: [:index, :create, :update, :destroy]
     resources :sanctions, only: [:index, :create, :update, :destroy]
