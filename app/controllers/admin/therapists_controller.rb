@@ -136,7 +136,9 @@ class Admin::TherapistsController < ApplicationController
       "month" => summary.month,
       "year" => summary.year,
       "total_therapist_payin" => summary.total_therapist_payin,
+      "total_sanctions_payin" => summary.total_sanctions_payin,
       "total_therapist_payout" => summary.total_therapist_payout,
+      "total_sanctions_payout" => summary.total_sanctions_payout,
       "total_tip_balance" => summary.total_tip_balance,
       "balance" => summary.balance
     }

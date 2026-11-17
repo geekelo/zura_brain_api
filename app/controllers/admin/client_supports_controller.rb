@@ -92,18 +92,26 @@ class Admin::ClientSupportsController < ApplicationController
     {
       "month" => summary.month,
       "year" => summary.year,
-      "total_amount" => summary.total_amount,
-      "amount_settled" => summary.amount_settled,
-      "amount_unsettled" => summary.amount_unsettled
+      "total_amount_payin" => summary.total_amount_payin,
+      "amount_settled_payin" => summary.amount_settled_payin,
+      "amount_unsettled_payin" => summary.amount_unsettled_payin,
+      "total_amount_payout" => summary.total_amount_payout,
+      "amount_settled_payout" => summary.amount_settled_payout,
+      "amount_unsettled_payout" => summary.amount_unsettled_payout
     }
   end
 
   def totals(records)
     rows = records.to_a
+    payins = rows.select { |row| row.type == "payin" }
+    payouts = rows.select { |row| row.type == "payout" }
     {
-      "total_amount" => money_sum(rows),
-      "amount_settled" => money_sum(rows.select(&:settled)),
-      "amount_unsettled" => money_sum(rows.reject(&:settled))
+      "total_amount_payin" => money_sum(payins),
+      "amount_settled_payin" => money_sum(payins.select(&:settled)),
+      "amount_unsettled_payin" => money_sum(payins.reject(&:settled)),
+      "total_amount_payout" => money_sum(payouts),
+      "amount_settled_payout" => money_sum(payouts.select(&:settled)),
+      "amount_unsettled_payout" => money_sum(payouts.reject(&:settled))
     }
   end
 

@@ -13,9 +13,10 @@ module Pos
     end
 
     def call
-      total_therapist_payin = sum_amounts("payin")
-      total_tip_inflow = total_tip_balance
-      total_therapist_payout = sum_amounts("payout")
+      total_sanctions_payin = sum_sanctions("payin")
+      total_sanctions_payout = sum_sanctions("payout")
+      total_therapist_payin = sum_amounts("payin") + total_sanctions_payin
+      total_therapist_payout = sum_amounts("payout") + total_sanctions_payout
       balance = total_therapist_payin + total_tip_balance - total_therapist_payout
 
       account = TherapistAccount.find_or_initialize_by(
@@ -25,8 +26,10 @@ module Pos
       )
       account.update!(
         total_therapist_payin: total_therapist_payin,
+        total_sanctions_payin: total_sanctions_payin,
         total_tip_balance: total_tip_balance,
         total_therapist_payout: total_therapist_payout,
+        total_sanctions_payout: total_sanctions_payout,
         balance: balance
       )
       account
@@ -36,6 +39,13 @@ module Pos
 
     def sum_amounts(entry_type)
       TherapistPayinsPayout
+        .where(therapist: @therapist, type: entry_type, created_at: period)
+        .sum(:amount)
+        .to_d
+    end
+
+    def sum_sanctions(entry_type)
+      Sanction
         .where(therapist: @therapist, type: entry_type, created_at: period)
         .sum(:amount)
         .to_d
