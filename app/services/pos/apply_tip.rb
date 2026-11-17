@@ -24,7 +24,7 @@ module Pos
           tip_balance: therapist_share
         )
 
-        extra_account = ExtraAccountPayinPayout.find_or_initialize_by(session_therapist: @session_therapist, type: "payin")
+        extra_account = ExtraAccount.find_or_initialize_by(session_therapist: @session_therapist, type: "payin")
         extra_account.update!(amount: extra_amount, description: "Tip for #{@session_therapist.therapist.work_name}")
 
         tech_account = TechPayinsPayout.find_or_initialize_by(extra_account: extra_account, type: "payin")

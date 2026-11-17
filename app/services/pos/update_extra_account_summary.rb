@@ -26,7 +26,7 @@ module Pos
     private
 
     def sum_amounts(entry_type)
-      ExtraAccountPayinPayout
+      ExtraAccount
         .where(type: entry_type, created_at: period)
         .sum(:amount)
         .to_d

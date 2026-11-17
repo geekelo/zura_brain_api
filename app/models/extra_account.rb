@@ -1,5 +1,4 @@
-class ExtraAccountPayinPayout < ApplicationRecord
-  self.table_name = "extra_accounts"
+class ExtraAccount < ApplicationRecord
   self.inheritance_column = :_type_disabled
 
   belongs_to :session_therapist

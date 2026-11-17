@@ -1,6 +1,6 @@
 class Pos::ExtraAccountPayinsPayoutsController < ApplicationController
   def create
-    extra_account_payin_payout = ExtraAccountPayinPayout.new(extra_account_payin_payout_params)
+    extra_account_payin_payout = ExtraAccount.new(extra_account_payin_payout_params)
     if extra_account_payin_payout.save
       refresh_extra_account_summary(extra_account_payin_payout)
       render json: extra_account_payin_payout, status: :created
@@ -34,7 +34,7 @@ class Pos::ExtraAccountPayinsPayoutsController < ApplicationController
   end
 
   def set_extra_account_payin_payout
-    extra_account_payin_payout = ExtraAccountPayinPayout.find_by(id: params[:extra_account_payin_payout_id])
+    extra_account_payin_payout = ExtraAccount.find_by(id: params[:extra_account_payin_payout_id])
     if extra_account_payin_payout.nil?
       render json: { error: "Extra account payin payout not found" }, status: :not_found
       return
