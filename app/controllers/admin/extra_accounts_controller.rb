@@ -13,8 +13,8 @@ class Admin::ExtraAccountsController < ApplicationController
       "payouts" => payouts.map { |entry| entry_json(entry) },
       "summaries" => summaries,
       "totals" => {
-        "payins" => payins.sum { |entry| entry.amount.to_d },
-        "payouts" => payouts.sum { |entry| entry.amount.to_d }
+        "payins" => money_sum(payins),
+        "payouts" => money_sum(payouts)
       }
     }, status: :ok
   end
@@ -32,7 +32,7 @@ class Admin::ExtraAccountsController < ApplicationController
       "amount" => entry.amount,
       "type" => entry.type,
       "description" => entry.description,
-      "created_at" => entry.created_at,
+      "created_at" => entry.created_at&.utc&.iso8601(0),
       "session_code" => entry.session_therapist&.session&.session_code,
       "therapist_name" => entry.session_therapist&.therapist&.work_name
     }
@@ -40,10 +40,24 @@ class Admin::ExtraAccountsController < ApplicationController
 
   def summaries
     if period
-      [Pos::UpdateExtraAccountSummary.call(month: params[:month], year: params[:year]).as_json]
+      [summary_json(Pos::UpdateExtraAccountSummary.call(month: params[:month], year: params[:year]))]
     else
-      ExtraAccountSummary.order(year: :desc, month: :desc).map(&:as_json)
+      ExtraAccountSummary.order(year: :desc, month: :desc).map { |summary| summary_json(summary) }
     end
+  end
+
+  def summary_json(summary)
+    {
+      "month" => summary.month,
+      "year" => summary.year,
+      "total_extra_account_inflow" => summary.total_extra_account_inflow,
+      "total_extra_account_outflow" => summary.total_extra_account_outflow,
+      "balance" => summary.balance
+    }
+  end
+
+  def money_sum(records)
+    records.to_a.sum(0.to_d) { |record| record.amount.to_d }
   end
 
   def requested_period?
@@ -53,9 +67,11 @@ class Admin::ExtraAccountsController < ApplicationController
   def invalid_period?
     return false unless requested_period?
 
-    month = params[:month].to_i
-    year = params[:year].to_i
-    !((1..12).cover?(month) && year.positive?)
+    month = params[:month].to_s
+    year = params[:year].to_s
+    return true unless month.match?(/\A[1-9]\d?\z/) && year.match?(/\A[1-9]\d*\z/)
+
+    !((1..12).cover?(month.to_i) && year.to_i.positive?)
   end
 
   def period
