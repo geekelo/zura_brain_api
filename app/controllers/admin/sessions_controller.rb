@@ -95,23 +95,30 @@ class Admin::SessionsController < ApplicationController
   end
 
   def destroy
-    session = Session.find_by(id: params[:id])
+    key = params[:id].to_s
+    session = Session.find_by(id: key) if key.match?(/\A\d+\z/)
+    session ||= Session.find_by(session_code: key)
     if session.nil?
       render json: { error: "Session not found" }, status: :not_found
       return
     end
 
-    if !AdminCode.matches?(params[:code])
+    unless admin_authorized?
       render json: { error: "Invalid code" }, status: :unauthorized
       return
     end
 
     client = session.client
     session_date = session.session_date
-    session.destroy
+    ActiveRecord::Base.transaction do
+      PaymentMethod.where(session_id: session.id).where.not(deleted_at: nil).delete_all
+      session.destroy!
+    end
     Pos::AssignSessionCycle.readjust(client)
     refresh_account_summaries(session_date)
     render json: { message: "Session deleted successfully" }, status: :ok
+  rescue ActiveRecord::RecordNotDestroyed, ActiveRecord::InvalidForeignKey => e
+    render json: { error: e.message }, status: :unprocessable_entity
   end
 
   def update_transaction_id
