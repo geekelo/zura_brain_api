@@ -54,4 +54,13 @@ class Session < ApplicationRecord
 
     Pos::SyncStakesAccount.call(self)
   end
+
+  public
+
+  def refresh_tipped!
+    tipped = session_therapists.where("tip_balance > 0").count
+    history = (session_history || {}).to_h.stringify_keys
+    history["tipped"] = tipped
+    update_columns(session_history: history)
+  end
 end

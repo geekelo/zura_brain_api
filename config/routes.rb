@@ -9,6 +9,7 @@ Rails.application.routes.draw do
     match "therapists/:code/status", to: "therapists#update_status", via: [:patch, :put]
 
     get "sessions", to: "sessions#index"
+    get "sessions/:ss", to: "sessions#show"
     post "sessions", to: "sessions#create"
     match "sessions/:ss/comments", to: "sessions#add_comment", via: [:patch, :put]
     match "sessions/:ss/comments/resolve", to: "sessions#resolve_comment", via: [:patch, :put]
@@ -54,6 +55,7 @@ Rails.application.routes.draw do
 
     post "client_supports/settle", to: "client_supports#settle"
     resources :client_supports, only: [:index, :create, :update, :destroy]
+    post "stakes_accounts/settle", to: "stakes_accounts#settle"
     resources :stakes_accounts, only: [:index, :create, :update, :destroy]
     resources :sanctions, only: [:index, :create, :update, :destroy]
   end

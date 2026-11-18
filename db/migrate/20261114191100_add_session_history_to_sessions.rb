@@ -5,7 +5,8 @@ class AddSessionHistoryToSessions < ActiveRecord::Migration[7.2]
       "started" => false,
       "ended" => false,
       "payment_verified" => false,
-      "completed" => false
+      "completed" => false,
+      "tipped" => 0
     }
   end
 end

@@ -31,12 +31,14 @@ class Admin::TechAccountsController < ApplicationController
     session_therapist = entry.extra_account&.session_therapist
 
     {
+      "id" => entry.id,
       "amount" => entry.amount,
       "type" => entry.type,
       "description" => entry.description,
       "created_at" => entry.created_at&.utc&.iso8601(0),
       "session_code" => session_therapist&.session&.session_code,
-      "therapist_name" => session_therapist&.therapist&.work_name
+      "therapist_name" => session_therapist&.therapist&.work_name,
+      "therapist_code" => session_therapist&.therapist&.code
     }
   end
 

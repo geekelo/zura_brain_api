@@ -29,12 +29,14 @@ class Admin::ExtraAccountsController < ApplicationController
 
   def entry_json(entry)
     {
+      "id" => entry.id,
       "amount" => entry.amount,
       "type" => entry.type,
       "description" => entry.description,
       "created_at" => entry.created_at&.utc&.iso8601(0),
       "session_code" => entry.session_therapist&.session&.session_code,
-      "therapist_name" => entry.session_therapist&.therapist&.work_name
+      "therapist_name" => entry.session_therapist&.therapist&.work_name,
+      "therapist_code" => entry.session_therapist&.therapist&.code
     }
   end
 

@@ -147,9 +147,11 @@ class Admin::TherapistsController < ApplicationController
 
   def entry_json(entry)
     {
+      "id" => entry.id,
       "amount" => entry.amount,
       "type" => entry.type,
-      "description" => entry.description
+      "description" => entry.description,
+      "created_at" => entry.created_at&.utc&.iso8601(0)
     }
   end
 

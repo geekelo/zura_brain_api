@@ -20,6 +20,16 @@ class Admin::SessionsController < ApplicationController
     render json: sessions.map { |session_record| session_json(session_record) }, status: :ok
   end
 
+  def show
+    session = Session.find_by(session_code: params[:ss])
+    if session.nil?
+      render json: { error: "Session not found" }, status: :not_found
+      return
+    end
+
+    render json: session_json(session), status: :ok
+  end
+
   def create
     creator_id = Pos::TherapistLookup.id_for_code(params[:st])
     if creator_id.nil?
@@ -247,12 +257,14 @@ class Admin::SessionsController < ApplicationController
     loaded.as_json(
       include: {
         client: { only: [:name, :phone] },
-        session_creator: { only: [:work_name] }
+        session_creator: { only: [:work_name, :code] }
       }
     ).merge(
+      "payment_methods" => loaded.payment_methods.select { |payment| payment.deleted_at.nil? }.map { |payment| payment_json(payment) },
       "session_therapists" => loaded.session_therapists.map { |link|
         {
           "name" => link.therapist&.work_name,
+          "code" => link.therapist&.code,
           "role" => link.role,
           "tip_amount" => link.tip_amount,
           "tip_balance" => link.tip_balance
@@ -260,6 +272,18 @@ class Admin::SessionsController < ApplicationController
       },
       "client_support" => client_support_json(loaded)
     )
+  end
+
+  def payment_json(payment)
+    {
+      "id" => payment.id,
+      "source" => payment.source,
+      "type" => payment.type,
+      "amount" => payment.amount,
+      "status" => payment.status,
+      "payment_url" => payment.payment_url,
+      "created_at" => payment.created_at&.utc&.iso8601(0)
+    }
   end
 
   def client_support_json(session_record)

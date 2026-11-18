@@ -6,7 +6,7 @@ class CreateAdminNotes < ActiveRecord::Migration[7.2]
       t.references :therapist, null: true, foreign_key: { to_table: :therapists}
       t.references :creator, null: true, foreign_key: { to_table: :therapists}
       t.text :body
-      t.string :status
+      t.string :status, default: "unresolved"
 
       t.timestamps
     end

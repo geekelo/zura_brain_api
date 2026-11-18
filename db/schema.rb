@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_11_17_181200) do
+ActiveRecord::Schema[7.2].define(version: 2026_11_18_160700) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -197,7 +197,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_17_181200) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "massage_type"
-    t.jsonb "session_history", default: {"ended"=>false, "pending"=>true, "started"=>false, "completed"=>false, "payment_verified"=>false}, null: false
+    t.jsonb "session_history", default: {"ended"=>false, "tipped"=>0, "pending"=>true, "started"=>false, "completed"=>false, "payment_verified"=>false}, null: false
     t.boolean "off_cycle", default: false, null: false
     t.index ["client_id"], name: "index_sessions_on_client_id"
     t.index ["session_code"], name: "index_sessions_on_session_code", unique: true

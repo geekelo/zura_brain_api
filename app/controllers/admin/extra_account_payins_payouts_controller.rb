@@ -13,9 +13,12 @@ class Admin::ExtraAccountPayinsPayoutsController < ApplicationController
     extra_account_payin_payout = set_extra_account_payin_payout
     return if extra_account_payin_payout.nil?
 
-    extra_account_payin_payout.update(extra_account_payin_payout_params)
-    refresh_extra_account_summary(extra_account_payin_payout)
-    render json: extra_account_payin_payout, status: :ok
+    if extra_account_payin_payout.update(extra_account_payin_payout_params)
+      refresh_extra_account_summary(extra_account_payin_payout)
+      render json: extra_account_payin_payout, status: :ok
+    else
+      render json: { errors: extra_account_payin_payout.errors.full_messages }, status: :unprocessable_entity
+    end
   end
 
   def destroy

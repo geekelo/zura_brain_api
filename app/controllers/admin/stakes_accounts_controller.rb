@@ -31,6 +31,11 @@ class Admin::StakesAccountsController < ApplicationController
     account = set_stakes_account
     return if account.nil?
 
+    if account.settled?
+      render json: { error: "Stake is settled" }, status: :unprocessable_entity
+      return
+    end
+
     previous_period = period_for(account)
     if changing_session?
       session_record = find_session
@@ -52,10 +57,33 @@ class Admin::StakesAccountsController < ApplicationController
     account = set_stakes_account
     return if account.nil?
 
+    if account.settled?
+      render json: { error: "Stake is settled" }, status: :unprocessable_entity
+      return
+    end
+
     previous_period = period_for(account)
     account.destroy
     refresh_period(*previous_period)
     render json: { message: "Stakes account deleted successfully" }, status: :ok
+  end
+
+  def settle
+    result = Pos::SettleStakesAccounts.call(
+      ids: params[:stakes_account_ids],
+      description: params[:description]
+    )
+    if result[:error]
+      render json: { error: result[:error] }, status: result[:status]
+      return
+    end
+
+    entry = result[:entry]
+    render json: {
+      "description" => entry.description,
+      "amount" => entry.amount,
+      "stakes_accounts" => result[:accounts].map { |account| account_json(account.reload) }
+    }, status: :ok
   end
 
   private
@@ -73,6 +101,7 @@ class Admin::StakesAccountsController < ApplicationController
       "settled" => account.settled,
       "session_code" => account.session&.session_code,
       "client_name" => account.session&.client&.name,
+      "client_phone" => account.session&.client&.phone,
       "created_at" => account.created_at&.utc&.iso8601(0)
     }
   end
@@ -109,7 +138,7 @@ class Admin::StakesAccountsController < ApplicationController
   end
 
   def stakes_account_params
-    params.require(:stakes_account).permit(:amount, :settled)
+    params.require(:stakes_account).permit(:amount)
   end
 
   def set_stakes_account

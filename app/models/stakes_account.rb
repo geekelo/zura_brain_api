@@ -2,6 +2,7 @@ class StakesAccount < ApplicationRecord
   belongs_to :session
 
   validates :amount, presence: true, numericality: { greater_than: 0 }
+  validate :remains_open, on: :update
 
   scope :in_month, ->(month, year) { occurring_in(month, year) }
 
@@ -12,5 +13,13 @@ class StakesAccount < ApplicationRecord
       range.begin,
       range.end
     )
+  end
+
+  private
+
+  def remains_open
+    return unless settled_in_database
+
+    errors.add(:base, "Stake is settled")
   end
 end
