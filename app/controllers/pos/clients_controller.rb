@@ -21,11 +21,18 @@ class Pos::ClientsController < ApplicationController
     return if created_by_name.nil?
 
     client = Client.new(client_params.merge(created_by: created_by_name))
+    if client.phone.present? && Client.exists?(phone: client.phone)
+      render json: { error: "Client already exists" }, status: :unprocessable_entity
+      return
+    end
+
     if client.save
         render json: client_attributes(client), status: :created
     else
         render json: { errors: client.errors.full_messages }, status: :unprocessable_entity
     end
+  rescue ActiveRecord::RecordNotUnique
+    render json: { error: "Client already exists" }, status: :unprocessable_entity
   end
 
   def update
