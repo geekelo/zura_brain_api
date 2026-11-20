@@ -111,20 +111,71 @@ class Pos::SessionsController < ApplicationController
       return
     end
 
-    return unless authorized?(session)
+    return unless client_support_authorized?(session)
 
     unless client_support_param?
       render json: { error: "Client support is required" }, status: :unprocessable_entity
       return
     end
 
-    support = session.client_supports.order(created_at: :desc, id: :desc).first || session.client_supports.build
+    support_id = (
+      (client_support_source.respond_to?(:[]) && (client_support_source[:id].presence || client_support_source["id"].presence)) ||
+      params[:id].presence
+    )
+    support = if support_id.present?
+      session.client_supports.find_by(id: support_id)
+    else
+      session.client_supports.build
+    end
+
+    if support.nil?
+      render json: { error: "Client support not found" }, status: :not_found
+      return
+    end
+
+    if support.persisted? && support.settled?
+      render json: { error: "Client support is settled" }, status: :unprocessable_entity
+      return
+    end
+
     if support.update(client_support_attributes)
       refresh_account_summaries(session.session_date)
       render json: session_json(session), status: :ok
     else
       render json: { errors: support.errors.full_messages }, status: :unprocessable_entity
     end
+  end
+
+  def destroy_client_support
+    session = Session.find_by(session_code: params[:ss])
+    if session.nil?
+      render json: { error: "Session not found" }, status: :not_found
+      return
+    end
+
+    return unless client_support_authorized?(session)
+
+    support_id = params[:id].presence || params.dig(:client_support, :id).presence
+    support = if support_id.present?
+      session.client_supports.find_by(id: support_id)
+    else
+      session.client_supports.order(created_at: :desc, id: :desc).first
+    end
+
+    if support.nil?
+      render json: { error: "Client support not found" }, status: :not_found
+      return
+    end
+
+    if support.settled?
+      render json: { error: "Client support is settled" }, status: :unprocessable_entity
+      return
+    end
+
+    session_date = session.session_date
+    support.destroy
+    refresh_account_summaries(session_date)
+    render json: session_json(session), status: :ok
   end
 
   def update_transaction_id
@@ -281,21 +332,33 @@ class Pos::SessionsController < ApplicationController
           "tip_balance" => link.tip_balance
         }
       },
-      "client_support" => client_support_json(loaded)
+      "client_support" => client_support_json(loaded),
+      "client_supports" => client_supports_json(loaded)
     )
   end
 
-  def client_support_json(session_record)
-    support = session_record.client_supports.max_by { |row| [row.created_at, row.id] }
-    return nil if support.nil?
+  def client_supports_json(session_record)
+    session_record.client_supports
+      .sort_by { |row| [row.created_at || Time.at(0), row.id || 0] }
+      .reverse
+      .map { |support| client_support_entry_json(support) }
+  end
 
+  def client_support_json(session_record)
+    supports = client_supports_json(session_record)
+    supports.first
+  end
+
+  def client_support_entry_json(support)
     {
+      "id" => support.id,
       "description" => support.description,
       "notes" => support.notes,
       "amount" => support.amount,
       "type" => support.type,
       "account_type" => support.account_type,
-      "settled" => support.settled
+      "settled" => support.settled,
+      "created_at" => support.created_at
     }
   end
 
@@ -304,6 +367,24 @@ class Pos::SessionsController < ApplicationController
 
     support = session.client_supports.order(created_at: :desc, id: :desc).first || session.client_supports.build
     support.update!(client_support_attributes)
+  end
+
+
+  def client_support_authorized?(session)
+    if AdminCode.matches?(params[:code]) || AdminCode.matches?(params[:tc])
+      return true
+    end
+
+    creator_id = Pos::TherapistLookup.id_for_code(params[:st].presence || params[:th].presence || params[:code])
+    if creator_id.nil?
+      render json: { error: "Therapist not found" }, status: :not_found
+      return false
+    end
+    if creator_id != session.session_creator_id
+      render json: { error: "You are not authorized to update this session" }, status: :forbidden
+      return false
+    end
+    true
   end
 
   def client_support_param?

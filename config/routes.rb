@@ -76,6 +76,7 @@ Rails.application.routes.draw do
     match "sessions/:ss/verify_payment", to: "sessions#verify_payment", via: [:patch, :put]
     match "sessions/:ss/times", to: "sessions#start_end_session", via: [:patch, :put]
     match "sessions/:ss/client_support", to: "sessions#update_client_support", via: [:patch, :put]
+    delete "sessions/:ss/client_support", to: "sessions#destroy_client_support"
     match "sessions/:ss", to: "sessions#update", via: [:patch, :put]
     delete "sessions/:id", to: "sessions#destroy"
 
