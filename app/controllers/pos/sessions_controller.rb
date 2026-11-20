@@ -371,20 +371,10 @@ class Pos::SessionsController < ApplicationController
 
 
   def client_support_authorized?(session)
-    if AdminCode.matches?(params[:code]) || AdminCode.matches?(params[:tc])
-      return true
-    end
+    # Prefer creator `th` (also accepts admin `tc` / `code` via Authorizable).
+    return true if authorized?(session)
 
-    creator_id = Pos::TherapistLookup.id_for_code(params[:st].presence || params[:th].presence || params[:code])
-    if creator_id.nil?
-      render json: { error: "Therapist not found" }, status: :not_found
-      return false
-    end
-    if creator_id != session.session_creator_id
-      render json: { error: "You are not authorized to update this session" }, status: :forbidden
-      return false
-    end
-    true
+    false
   end
 
   def client_support_param?
