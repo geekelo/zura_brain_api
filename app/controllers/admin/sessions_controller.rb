@@ -272,7 +272,7 @@ class Admin::SessionsController < ApplicationController
     loaded = Session.includes(:client, :session_creator, :payment_methods, :client_supports, session_therapists: :therapist, disputes: :assigned_staff).find(session_record.id)
     loaded.as_json(
       include: {
-        client: { only: [:name, :phone] },
+        client: { only: [:name, :phone, :cycle, :cycle_length] },
         session_creator: { only: [:work_name, :code] }
       }
     ).merge(

@@ -329,10 +329,15 @@ class Pos::SessionsController < ApplicationController
     loaded = Session.includes(:client, :session_creator, :payment_methods, :client_supports, session_therapists: :therapist, disputes: :assigned_staff).find(session_record.id)
     loaded.as_json(
       include: {
-        client: { only: [:name, :phone] },
         session_creator: { only: [:work_name] }
       }
     ).merge(
+      "client" => {
+        "name" => loaded.client&.name,
+        "phone" => loaded.client&.phone,
+        "cycle" => loaded.client&.cycle,
+        "cycle_length" => loaded.client&.cycle_length
+      },
       "session_therapists" => loaded.session_therapists.map { |link|
         {
           "name" => link.therapist&.work_name,
