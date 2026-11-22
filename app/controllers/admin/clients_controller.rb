@@ -95,11 +95,16 @@ class Admin::ClientsController < ApplicationController
   end
 
   def session_counts_by_client(clients)
-    grouped = Session.where(client_id: clients.map(&:id)).group(:client_id, :status).count
+    ids = clients.map(&:id)
+    grouped = Session.where(client_id: ids).group(:client_id, :status).count
+    cycle_grouped = Session.where(client_id: ids).group(:client_id, :off_cycle).count
     counts = Hash.new { |by_client, client_id| by_client[client_id] = Hash.new(0) }
     grouped.each do |(client_id, status), total|
       counts[client_id][status] = total
       counts[client_id][:total] += total
+    end
+    cycle_grouped.each do |(client_id, off_cycle), total|
+      counts[client_id][off_cycle ? :off_cycle : :on_cycle] += total
     end
     counts
   end
@@ -115,7 +120,9 @@ class Admin::ClientsController < ApplicationController
       "completed_sessions" => counts["completed"].to_i,
       "pending_sessions" => counts["pending"].to_i,
       "disputed_sessions" => counts["disputed"].to_i,
-      "ongoing_sessions" => counts["started"].to_i
+      "ongoing_sessions" => counts["started"].to_i,
+      "on_cycle_sessions" => counts[:on_cycle].to_i,
+      "off_cycle_sessions" => counts[:off_cycle].to_i
     )
   end
 end
