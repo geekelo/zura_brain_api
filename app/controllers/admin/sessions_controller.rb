@@ -219,6 +219,7 @@ class Admin::SessionsController < ApplicationController
     history["ended"] = true if session.end_time.present?
     history["completed"] = true if session.status == "completed"
     history["completed"] = false if session.status == "disputed"
+    history["disputed"] = true if session.status == "disputed"
     session.session_history = history
 
     if session.save
@@ -260,7 +261,7 @@ class Admin::SessionsController < ApplicationController
   private
 
   def session_json(session_record)
-    loaded = Session.includes(:client, :session_creator, :payment_methods, :client_supports, session_therapists: :therapist).find(session_record.id)
+    loaded = Session.includes(:client, :session_creator, :payment_methods, :client_supports, session_therapists: :therapist, disputes: :assigned_staff).find(session_record.id)
     loaded.as_json(
       include: {
         client: { only: [:name, :phone] },
@@ -277,7 +278,8 @@ class Admin::SessionsController < ApplicationController
           "tip_balance" => link.tip_balance
         }
       },
-      "client_support" => client_support_json(loaded)
+      "client_support" => client_support_json(loaded),
+      "disputes" => loaded.disputes.sort_by { |row| [row.created_at || Time.at(0), row.id || 0] }.reverse.map(&:as_api_json)
     )
   end
 

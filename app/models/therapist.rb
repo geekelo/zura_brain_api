@@ -7,4 +7,6 @@ class Therapist < ApplicationRecord
     has_many :session_activities, dependent: :destroy
     has_many :sessions, through: :session_therapists
     has_many :sanctions, dependent: :nullify
+    has_many :dispute_therapists, dependent: :destroy
+    has_many :disputes, through: :dispute_therapists
 end

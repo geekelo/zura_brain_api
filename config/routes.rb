@@ -58,6 +58,14 @@ Rails.application.routes.draw do
     post "stakes_accounts/settle", to: "stakes_accounts#settle"
     resources :stakes_accounts, only: [:index, :create, :update, :destroy]
     resources :sanctions, only: [:index, :create, :update, :destroy]
+
+    get "disputes", to: "disputes#index"
+    post "disputes", to: "disputes#create"
+    match "disputes/:id/resolve", to: "disputes#resolve", via: [:patch, :put]
+    post "disputes/:id/thread", to: "disputes#add_thread"
+    match "disputes/:id/thread/:index", to: "disputes#update_thread", via: [:patch, :put]
+    delete "disputes/:id/thread/:index", to: "disputes#destroy_thread"
+    match "disputes/:id", to: "disputes#update", via: [:patch, :put]
   end
 
   namespace :pos do
@@ -108,5 +116,13 @@ Rails.application.routes.draw do
 
     resources :lunez_account_summaries, only: [:create]
     resources :main_account_summaries, only: [:create]
+
+    get "disputes", to: "disputes#index"
+    post "disputes", to: "disputes#create"
+    match "disputes/:id/resolve", to: "disputes#resolve", via: [:patch, :put]
+    post "disputes/:id/thread", to: "disputes#add_thread"
+    match "disputes/:id/thread/:index", to: "disputes#update_thread", via: [:patch, :put]
+    delete "disputes/:id/thread/:index", to: "disputes#destroy_thread"
+    match "disputes/:id", to: "disputes#update", via: [:patch, :put]
   end
 end

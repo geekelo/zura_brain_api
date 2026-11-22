@@ -18,6 +18,7 @@ class Session < ApplicationRecord
   has_many :client_supports, dependent: :destroy
   has_many :stakes_accounts, dependent: :destroy
   has_many :admin_notes, dependent: :destroy
+  has_many :disputes, dependent: :destroy
 
   has_many :therapists,
            through: :session_therapists

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_11_18_160700) do
+ActiveRecord::Schema[7.2].define(version: 2026_11_22_104500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -65,6 +65,27 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_18_160700) do
     t.datetime "updated_at", null: false
     t.text "client_preferences"
     t.index ["phone"], name: "index_clients_on_phone", unique: true
+  end
+
+  create_table "dispute_therapists", force: :cascade do |t|
+    t.bigint "dispute_id", null: false
+    t.bigint "therapist_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["dispute_id", "therapist_id"], name: "index_dispute_therapists_on_dispute_id_and_therapist_id", unique: true
+    t.index ["dispute_id"], name: "index_dispute_therapists_on_dispute_id"
+    t.index ["therapist_id"], name: "index_dispute_therapists_on_therapist_id"
+  end
+
+  create_table "disputes", force: :cascade do |t|
+    t.bigint "session_id", null: false
+    t.text "description", null: false
+    t.jsonb "thread", default: [], null: false
+    t.boolean "resolved", default: false, null: false
+    t.jsonb "resolution", default: {"text"=>"", "image_urls"=>[]}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["session_id"], name: "index_disputes_on_session_id"
   end
 
   create_table "extra_account_summaries", force: :cascade do |t|
@@ -283,6 +304,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_18_160700) do
   add_foreign_key "admin_notes", "therapists"
   add_foreign_key "admin_notes", "therapists", column: "creator_id"
   add_foreign_key "client_supports", "sessions"
+  add_foreign_key "dispute_therapists", "disputes", on_delete: :cascade
+  add_foreign_key "dispute_therapists", "therapists", on_delete: :cascade
+  add_foreign_key "disputes", "sessions", on_delete: :cascade
   add_foreign_key "extra_accounts", "session_therapists"
   add_foreign_key "payment_methods", "sessions"
   add_foreign_key "sanctions", "therapists", on_delete: :nullify
