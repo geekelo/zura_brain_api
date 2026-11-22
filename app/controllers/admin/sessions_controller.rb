@@ -7,6 +7,9 @@ class Admin::SessionsController < ApplicationController
 
   def index
     sessions = Session.by_cycle.includes(:client, :session_creator, :payment_methods, session_therapists: :therapist)
+    if params[:status].present?
+      sessions = sessions.where(status: params[:status].to_s.strip.downcase)
+    end
     if params[:client_id].present?
       sessions = sessions.where(client_id: params[:client_id])
     elsif params[:phone].present?
@@ -211,6 +214,11 @@ class Admin::SessionsController < ApplicationController
       end
     else
       return unless authorized?(session)
+    end
+
+    if params[:status].to_s == "completed" && session.disputes.where(resolved: false).exists?
+      render json: { error: "Cannot complete a session while a dispute is unresolved" }, status: :unprocessable_entity
+      return
     end
 
     session.status = params[:status]
