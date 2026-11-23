@@ -1,6 +1,6 @@
 class AdminCode
   def self.value
-    ENV.fetch("ADMIN_CODE", "123456")
+    ENV.fetch("ADMIN_CODE", "admin6")
   end
 
   def self.matches?(code)
