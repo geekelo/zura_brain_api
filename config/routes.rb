@@ -23,6 +23,7 @@ Rails.application.routes.draw do
     post "session_therapists", to: "session_therapists#create"
     delete "session_therapists", to: "session_therapists#destroy"
     post "session_therapists/tip", to: "session_therapists#tip"
+    delete "session_therapists/tip", to: "session_therapists#untip"
 
     resources :session_activities, only: [:create, :update, :destroy], param: :session_activity_id
 
@@ -91,6 +92,7 @@ Rails.application.routes.draw do
     post "session_therapists", to: "session_therapists#create"
     delete "session_therapists", to: "session_therapists#destroy"
     post "session_therapists/tip", to: "session_therapists#tip"
+    delete "session_therapists/tip", to: "session_therapists#untip"
 
     resources :session_activities, only: [:create, :update, :destroy], param: :session_activity_id
 

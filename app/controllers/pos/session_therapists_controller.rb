@@ -44,11 +44,6 @@ class Pos::SessionTherapistsController < ApplicationController
       return
     end
 
-    if session_therapist.tip_amount.to_d > 0
-      render json: { error: "Session therapist has tip amount" }, status: :unprocessable_entity
-      return
-    end
-
     if session_therapist.destroy
       render json: { message: "Session therapist deleted successfully" }, status: :ok
     else
@@ -101,12 +96,47 @@ class Pos::SessionTherapistsController < ApplicationController
     }, status: :ok
   end
 
+  def untip
+    return unless tip_admin?
+
+    session_record = Session.find_by(session_code: params[:ss])
+    if session_record.nil?
+      render json: { error: "Session not found" }, status: :not_found
+      return
+    end
+
+    therapist = Therapist.find_by(work_name: params[:name])
+    if therapist.nil?
+      render json: { error: "Therapist not found" }, status: :not_found
+      return
+    end
+
+    session_therapist = SessionTherapist.find_by(session_id: session_record.id, therapist_id: therapist.id)
+    if session_therapist.nil?
+      render json: { error: "Session therapist not found" }, status: :not_found
+      return
+    end
+
+    Pos::ClearTip.call(session_therapist: session_therapist)
+    render json: { name: therapist.work_name, tip_amount: nil, tip_balance: nil }, status: :ok
+  end
+
   private
 
   def decimal_tip_amount
     BigDecimal(params[:tip_amount].to_s)
   rescue ArgumentError
     nil
+  end
+
+  def tip_admin?
+    admin_code = params[:admin_code].presence || params[:tc].presence || params[:code].presence || params[:th]
+    if AdminCode.matches?(admin_code)
+      return true
+    end
+
+    render json: { error: "Not authorized to tip" }, status: :unauthorized
+    false
   end
   
   def session_therapist_params

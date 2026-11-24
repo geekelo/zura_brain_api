@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_11_22_104500) do
+ActiveRecord::Schema[7.2].define(version: 2026_11_24_070000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -261,7 +261,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_22_104500) do
     t.string "type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "session_therapist_id"
     t.index ["extra_account_id"], name: "index_tech_payins_payouts_on_extra_account_id"
+    t.index ["session_therapist_id"], name: "index_tech_payins_payouts_on_session_therapist_id"
   end
 
   create_table "therapist_accounts", force: :cascade do |t|
@@ -307,7 +309,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_22_104500) do
   add_foreign_key "dispute_therapists", "disputes", on_delete: :cascade
   add_foreign_key "dispute_therapists", "therapists", on_delete: :cascade
   add_foreign_key "disputes", "sessions", on_delete: :cascade
-  add_foreign_key "extra_accounts", "session_therapists"
+  add_foreign_key "extra_accounts", "session_therapists", on_delete: :cascade
   add_foreign_key "payment_methods", "sessions"
   add_foreign_key "sanctions", "therapists", on_delete: :nullify
   add_foreign_key "session_activities", "sessions"
@@ -318,6 +320,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_11_22_104500) do
   add_foreign_key "sessions", "therapists", column: "session_creator_id"
   add_foreign_key "stakes_accounts", "sessions"
   add_foreign_key "tech_payins_payouts", "extra_accounts"
+  add_foreign_key "tech_payins_payouts", "session_therapists", on_delete: :cascade
   add_foreign_key "therapist_accounts", "therapists"
   add_foreign_key "therapist_payins_payouts", "therapists"
 end
