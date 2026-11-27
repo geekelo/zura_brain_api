@@ -15,6 +15,11 @@ class Session < ApplicationRecord
            -> { where(deleted_at: nil) },
            dependent: :destroy
 
+  # Includes soft-deleted rows so they no longer block deleting the session.
+  has_many :all_payment_methods,
+           class_name: "PaymentMethod",
+           dependent: :delete_all
+
   has_many :client_supports, dependent: :destroy
   has_many :stakes_accounts, dependent: :destroy
   has_many :admin_notes, dependent: :destroy
